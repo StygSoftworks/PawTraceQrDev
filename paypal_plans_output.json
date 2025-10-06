@@ -1,0 +1,15 @@
+﻿{
+    "environment":  "live",
+    "currency":  "USD",
+    "products":  {
+                     "PawTraceBase":  "PROD-9374991123020840J",
+                     "ExtraPetsAddOn":  "PROD-1LK38356XJ1438503"
+                 },
+    "plans":  {
+                  "A1":  "P-01B964946R701620HNDPMUVA",
+                  "B2":  "P-0H956331A3859781YNDPMUVI",
+                  "A2":  "P-4V1531673F796000SNDPMUVA",
+                  "B1":  "P-99N7761092897711MNDPMUVA"
+              },
+    "tax_percent":  "0"
+}
