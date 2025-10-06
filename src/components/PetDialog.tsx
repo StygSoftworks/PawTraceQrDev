@@ -23,18 +23,7 @@ import {
 } from "@/components/ui/command";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { 
-  ChevronsUpDown, 
-  PawPrint, 
-  Palette, 
-  Calendar, 
-  Weight, 
-  FileText,
-  Syringe,
-  Camera,
-  AlertCircle,
-  Sparkles
-} from "lucide-react";
+import { ChevronsUpDown, PawPrint, Palette, Calendar, Weight, FileText, Syringe, Camera, CircleAlert as AlertCircle, Sparkles } from "lucide-react";
 import {
   DOG_BREED_NAMES,
   CAT_PATTERN_NAMES,
@@ -220,7 +209,7 @@ export function PetDialog({ mode, open, onOpenChange, initialPet, onSubmit }: Pr
 
   return (
     <Dialog open={open} onOpenChange={(v) => !submitting && onOpenChange(v)}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900">
         <DialogHeader className="space-y-3">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center ring-4 ring-primary/5">

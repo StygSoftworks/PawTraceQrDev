@@ -8,17 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { 
-  PawPrint, 
-  AlertTriangle, 
-  Phone, 
-  Mail, 
-  MapPin,
-  Info,
-  Home,
-  Heart,
-  Clock
-} from "lucide-react";
+import { PawPrint, TriangleAlert as AlertTriangle, Phone, Mail, MapPin, Info, Hop as Home, Heart, Clock } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { ScanLogger } from "@/components/ScanLogger";
 import { PetScanBadge } from "@/components/PetScanBadge";
@@ -366,7 +356,7 @@ export default function PublicPet() {
 
       {/* Full Image Modal */}
       <Dialog open={imageModalOpen} onOpenChange={setImageModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+        <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-white dark:bg-slate-900">
           <DialogHeader className="p-6 pb-0">
             <DialogTitle className="flex items-center gap-2">
               <PawPrint className="h-5 w-5" />
