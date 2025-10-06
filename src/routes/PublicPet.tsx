@@ -57,14 +57,22 @@ export default function PublicPet() {
     queryKey: ["public-pet", id],
     enabled: !!id,
     queryFn: async (): Promise<PublicPet | null> => {
-      const { data, error } = await supabase
-        .from("public_pets")
-        .select("*")
-        .eq("short_id", id)
-        .maybeSingle();
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-public-pet?short_id=${id}`;
 
-      if (error) throw error;
-      return data as PublicPet | null;
+      const headers = {
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+      };
+
+      const response = await fetch(apiUrl, { headers });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch pet data');
+      }
+
+      const result = await response.json();
+      return result.data as PublicPet | null;
     },
     staleTime: 60_000,
   });
