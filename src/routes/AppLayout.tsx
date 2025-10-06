@@ -1,10 +1,13 @@
 import { Outlet } from "react-router-dom";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import { DemoBanner } from "@/components/DemoBanner";
 
 export default function AppLayout() {
   return (
     <div className="min-h-svh bg-background text-foreground">
+      {/* Demo Banner */}
+      <DemoBanner />
 
       {/* Top Bar */}
       <Header />
