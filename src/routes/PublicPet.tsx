@@ -12,6 +12,7 @@ import { PawPrint, TriangleAlert as AlertTriangle, Phone, Mail, MapPin, Info, Ho
 import { ScanLogger } from "@/components/ScanLogger";
 import { PetScanBadge } from "@/components/PetScanBadge";
 import Header from "@/components/Header";
+import { supabase } from "@/lib/supabase";
 type PublicPet = {
   id: string;
   name: string;
@@ -63,7 +64,9 @@ export default function PublicPet() {
         .eq("short_id", id)
         .maybeSingle();
 
+
       if (error) throw error;
+      console.log(data);
       return data as PublicPet | null;
     },
     staleTime: 60_000,
