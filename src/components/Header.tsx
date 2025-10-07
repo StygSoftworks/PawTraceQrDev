@@ -70,8 +70,8 @@ const MobileNavItem = ({
       aria-current={active ? "page" : undefined}
       className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors
         ${active
-          ? "bg-[#4D9FFF] text-white"
-          : "text-foreground hover:bg-[#4D9FFF]/10"
+          ? "bg-primary text-primary-foreground"
+          : "text-foreground hover:bg-primary/10"
         }`}
     >
       <Icon className="h-4 w-4" />
@@ -87,8 +87,8 @@ export default function Header() {
   const navItems = user ? getAuthenticatedNavItems(profile?.role) : getPublicNavItems();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 shadow-lg backdrop-blur-sm">
-      <div className="absolute inset-0 bg-[#1E1F24]/95" />
+    <header className="sticky top-0 z-40 border-b border-white/20 shadow-lg backdrop-blur-sm">
+      <div className="absolute inset-0 bg-gradient-to-r from-brand-coral via-brand-peach to-brand-teal opacity-95" />
 
       <div className="relative container mx-auto">
         <div className="flex h-16 items-center justify-between px-4 sm:px-6">

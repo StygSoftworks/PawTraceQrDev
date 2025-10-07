@@ -58,7 +58,7 @@ export function HeaderAuth() {
         <Button
           asChild
           size="sm"
-          className="bg-[#4D9FFF] hover:bg-[#3D8FEF] text-white border-0 font-semibold shadow-lg hover:shadow-xl transition-all"
+          className="bg-white hover:bg-white/90 text-brand-coral border-0 font-semibold shadow-lg hover:shadow-xl transition-all"
         >
           <Link to="/register" className="flex items-center gap-2">
             <UserPlus className="h-4 w-4" />
@@ -76,9 +76,9 @@ export function HeaderAuth() {
           variant="ghost"
           className="gap-2 h-10 px-3 text-white hover:bg-white/10 border border-white/20 hover:border-white/30 transition-all bg-white/5 backdrop-blur-sm"
         >
-          <Avatar className="h-7 w-7 ring-2 ring-white/30">
+          <Avatar className="h-7 w-7 ring-2 ring-white/40">
             <AvatarImage src={user?.user_metadata?.avatar_url} alt="avatar" />
-            <AvatarFallback className="bg-[#4D9FFF] text-white font-bold text-xs">
+            <AvatarFallback className="bg-white text-brand-coral font-bold text-xs">
               {initials}
             </AvatarFallback>
           </Avatar>
