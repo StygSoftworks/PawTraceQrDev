@@ -1,15 +1,15 @@
 ﻿{
-    "environment":  "live",
+    "environment":  "sandbox",
     "currency":  "USD",
     "products":  {
-                     "PawTraceBase":  "PROD-9374991123020840J",
-                     "ExtraPetsAddOn":  "PROD-1LK38356XJ1438503"
+                     "PawTraceBase":  "PROD-6ER247815K537382J",
+                     "ExtraPetsAddOn":  "PROD-37F45196S9009972Y"
                  },
     "plans":  {
-                  "A1":  "P-01B964946R701620HNDPMUVA",
-                  "B2":  "P-0H956331A3859781YNDPMUVI",
-                  "A2":  "P-4V1531673F796000SNDPMUVA",
-                  "B1":  "P-99N7761092897711MNDPMUVA"
+                  "A1":  "P-74N21144BH7224146NDSS6MY",
+                  "B2":  "P-4R0311392G060980KNDSS6NA",
+                  "A2":  "P-002596997V2924715NDSS6MY",
+                  "B1":  "P-55P549186J183725GNDSS6NA"
               },
     "tax_percent":  "0"
 }
