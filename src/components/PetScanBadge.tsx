@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Badge } from "@/components/ui/badge";
+import { Eye } from "lucide-react";
 import { countScansForPets } from "@/lib/analytics";
 
 export function PetScanBadge({
@@ -19,11 +19,18 @@ export function PetScanBadge({
   });
 
   if (!petId) return null;
-  if (isLoading || isError) return <Badge variant="outline">{label}: —</Badge>;
 
   return (
-    <Badge variant="secondary">
-      {label} ({days}d): {data}
-    </Badge>
+    <div className="flex items-center gap-3">
+      <div className="h-10 w-10 bg-primary/10 rounded-lg flex items-center justify-center">
+        <Eye className="h-5 w-5 text-primary" />
+      </div>
+      <div>
+        <p className="text-sm font-medium">{label} (Last {days} days)</p>
+        <p className="text-sm text-muted-foreground">
+          {isLoading ? "Loading..." : isError ? "—" : `${data} view${data === 1 ? '' : 's'}`}
+        </p>
+      </div>
+    </div>
   );
 }

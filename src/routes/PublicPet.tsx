@@ -272,10 +272,7 @@ export default function PublicPet() {
                         )}
 
                         {/* Pets Scan Count */}
-                        <div className="flex items-center justify-between">
-                      
-                          <PetScanBadge petId={data.id} days={30} label="Scans" />
-                        </div>
+                        <PetScanBadge petId={data.id} days={30} label="QR Code Scans" />
 
                       </div>
 
