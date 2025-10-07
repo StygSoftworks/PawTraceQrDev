@@ -2,17 +2,6 @@
 //import QRCode from "qrcode";
 import { supabase } from "@/lib/supabase";
 
-/** Make a QR PNG data URL from a string */
-// export async function makeQrDataUrl(text: string) {
-//   // Error correction 'M' is a good balance; scale controls pixel size
-//   return await QRCode.toDataURL(text, {
-//     errorCorrectionLevel: "M",
-//     margin: 1,
-//     scale: 8, // ~ 256px
-//     color: { dark: "#000000", light: "#ffffff" },
-//   });
-// }
-
 // src/lib/qr.ts
 export async function makeQrDataUrl(text: string) {
   const QRCode = (await import("qrcode")).default; // lazy-load
@@ -33,18 +22,6 @@ export async function dataUrlToBlob(dataUrl: string): Promise<Blob> {
 }
 
 /** Upload the QR PNG blob to the pet-qr bucket and return a public URL */
-/*
-export async function uploadPetQr(ownerId: string, petId: string, blob: Blob) {
-  const path = `${ownerId}/${petId}.png`;
-  const { error } = await supabase.storage
-    .from("pet-qr")
-    .upload(path, blob, { contentType: "image/png", upsert: true });
-  if (error) throw error;
-
-  const { data } = supabase.storage.from("pet-qr").getPublicUrl(path);
-  return data.publicUrl;
-}
-  */
 export async function uploadPetQr(ownerId: string, shortId: string, blob: Blob) {
   const path = `${ownerId}/${shortId}.png`; // store by short_id too
   const { error } = await supabase.storage
