@@ -2,69 +2,125 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  ╔══════════════════════════════════════════════════════════════╗
+  ║  MODULAR COLOR SYSTEM - Easy Theme Customization            ║
+  ╠══════════════════════════════════════════════════════════════╣
+  ║  To change the entire theme, simply update the HSL values    ║
+  ║  in the :root and .dark sections below.                      ║
+  ║                                                               ║
+  ║  HSL Format: Hue Saturation Lightness                        ║
+  ║  Example: 179 70% 45% = hsl(179deg 70% 45%)                  ║
+  ║                                                               ║
+  ║  KEY COLOR ROLES:                                            ║
+  ║  • primary: Main brand color (buttons, links, focus)         ║
+  ║  • accent: Secondary brand color (highlights, CTAs)          ║
+  ║  • success/warning/destructive/info: Status indicators       ║
+  ║  • muted: Subtle backgrounds and disabled states             ║
+  ║  • foreground: Main text color                               ║
+  ║  • background: Page background                               ║
+  ║                                                               ║
+  ║  All components automatically use these values!              ║
+  ╚══════════════════════════════════════════════════════════════╝
+*/
+
 @layer base {
   :root {
-    /* Cheerful Light Theme - Warm & Welcoming */
-    --background: 42 100% 97%;        /* Soft cream */
-    --foreground: 25 40% 20%;         /* Warm dark brown */
+    /* Modern Theme with Teal & Orange */
+    --background: 42 100% 99%;        /* Soft off-white #FFFDF8 */
+    --foreground: 210 60% 15%;        /* Deep slate #0F172A */
+    --surface: 0 0% 100%;             /* Pure white #FFFFFF */
 
-    --card: 0 0% 100%;                /* Pure white cards */
-    --card-foreground: 25 40% 20%;    /* Warm dark brown */
+    --card: 0 0% 100%;                /* White cards */
+    --card-foreground: 210 60% 15%;   /* Deep slate text */
 
-    --popover: 0 0% 100%;             /* Pure white */
-    --popover-foreground: 25 40% 20%; /* Warm dark brown */
+    --popover: 0 0% 100%;             /* White */
+    --popover-foreground: 210 60% 15%; /* Deep slate text */
 
-    --primary: 20 90% 55%;            /* Vibrant coral-orange */
-    --primary-foreground: 0 0% 100%;  /* White text on primary */
+    /* Primary: Teal */
+    --primary: 179 70% 45%;           /* #21C7C5 - Vibrant teal */
+    --primary-light: 178 77% 68%;     /* #6FE8E4 - Light teal */
+    --primary-dark: 179 72% 35%;      /* #179897 - Dark teal */
+    --primary-foreground: 0 0% 100%;  /* White text */
 
-    --secondary: 160 60% 50%;         /* Fresh teal/mint */
-    --secondary-foreground: 0 0% 100%; /* White text on secondary */
+    /* Accent: Orange */
+    --accent: 37 100% 64%;            /* #FFB84C - Warm orange */
+    --accent-light: 45 100% 76%;      /* #FFE082 - Light orange */
+    --accent-foreground: 210 60% 15%; /* Deep slate text */
 
-    --muted: 42 30% 92%;              /* Soft beige */
-    --muted-foreground: 25 20% 45%;   /* Medium warm gray */
+    /* Semantic Colors */
+    --success: 142 69% 58%;           /* #4ADE80 - Green */
+    --success-foreground: 0 0% 100%;  /* White text */
 
-    --accent: 280 65% 60%;            /* Playful purple */
-    --accent-foreground: 0 0% 100%;   /* White text on accent */
+    --warning: 48 96% 54%;            /* #FACC15 - Yellow */
+    --warning-foreground: 210 60% 15%; /* Deep slate text */
 
-    --destructive: 0 85% 60%;         /* Bright red for alerts */
+    --destructive: 0 84% 60%;         /* #EF4444 - Red */
     --destructive-foreground: 0 0% 100%; /* White text */
 
-    --border: 42 20% 85%;             /* Light warm border */
-    --input: 42 20% 85%;              /* Light warm border */
-    --ring: 20 90% 55%;               /* Coral focus ring */
+    --info: 199 89% 61%;              /* #38BDF8 - Blue */
+    --info-foreground: 0 0% 100%;     /* White text */
 
-    --radius: 0.75rem;                /* Friendly rounded corners */
+    /* UI Elements */
+    --secondary: 210 16% 93%;         /* Light gray */
+    --secondary-foreground: 210 60% 15%; /* Deep slate text */
+
+    --muted: 210 16% 93%;             /* Light gray */
+    --muted-foreground: 215 16% 47%;  /* Medium gray #64748B */
+
+    --border: 210 20% 90%;            /* Light border */
+    --input: 210 20% 90%;             /* Light border */
+    --ring: 179 70% 45%;              /* Teal focus ring */
+
+    --radius: 0.75rem;                /* Rounded corners */
   }
 
   .dark {
-    /* Cheerful Dark Theme - Cozy & Inviting */
-    --background: 240 15% 12%;        /* Soft charcoal */
-    --foreground: 42 80% 92%;         /* Warm cream text */
+    /* Dark Mode with Adjusted Colors */
+    --background: 222 20% 12%;        /* Dark charcoal */
+    --foreground: 42 90% 95%;         /* Warm off-white */
+    --surface: 222 18% 16%;           /* Slightly lighter */
 
-    --card: 240 12% 16%;              /* Slightly lighter charcoal */
-    --card-foreground: 42 80% 92%;    /* Warm cream text */
+    --card: 222 18% 16%;              /* Dark card */
+    --card-foreground: 42 90% 95%;    /* Warm off-white */
 
-    --popover: 240 12% 16%;           /* Slightly lighter charcoal */
-    --popover-foreground: 42 80% 92%; /* Warm cream text */
+    --popover: 222 18% 16%;           /* Dark popover */
+    --popover-foreground: 42 90% 95%; /* Warm off-white */
 
-    --primary: 20 90% 60%;            /* Brighter coral-orange */
-    --primary-foreground: 0 0% 100%;  /* White text */
+    /* Primary: Brighter Teal */
+    --primary: 179 70% 55%;           /* Brighter teal */
+    --primary-light: 178 77% 73%;     /* Lighter teal */
+    --primary-dark: 179 72% 40%;      /* Darker teal */
+    --primary-foreground: 222 20% 12%; /* Dark text for contrast */
 
-    --secondary: 160 50% 45%;         /* Softer teal */
-    --secondary-foreground: 0 0% 100%; /* White text */
+    /* Accent: Brighter Orange */
+    --accent: 37 100% 68%;            /* Brighter orange */
+    --accent-light: 45 100% 80%;      /* Lighter orange */
+    --accent-foreground: 222 20% 12%; /* Dark text */
 
-    --muted: 240 10% 25%;             /* Warm muted gray */
-    --muted-foreground: 42 30% 70%;   /* Light warm gray */
+    /* Semantic Colors */
+    --success: 142 69% 65%;           /* Brighter green */
+    --success-foreground: 222 20% 12%; /* Dark text */
 
-    --accent: 280 60% 65%;            /* Lighter playful purple */
-    --accent-foreground: 0 0% 100%;   /* White text */
+    --warning: 48 96% 60%;            /* Brighter yellow */
+    --warning-foreground: 222 20% 12%; /* Dark text */
 
-    --destructive: 0 80% 65%;         /* Softer red for dark mode */
+    --destructive: 0 84% 68%;         /* Softer red */
     --destructive-foreground: 0 0% 100%; /* White text */
 
-    --border: 240 10% 25%;            /* Warm dark border */
-    --input: 240 10% 25%;             /* Warm dark border */
-    --ring: 20 90% 60%;               /* Brighter coral focus ring */
+    --info: 199 89% 68%;              /* Brighter blue */
+    --info-foreground: 222 20% 12%;   /* Dark text */
+
+    /* UI Elements */
+    --secondary: 222 15% 25%;         /* Dark gray */
+    --secondary-foreground: 42 90% 95%; /* Light text */
+
+    --muted: 222 15% 25%;             /* Dark muted */
+    --muted-foreground: 215 20% 65%;  /* Medium light gray */
+
+    --border: 222 15% 25%;            /* Dark border */
+    --input: 222 15% 25%;             /* Dark border */
+    --ring: 179 70% 55%;              /* Brighter teal ring */
   }
 }
 
