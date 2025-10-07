@@ -88,7 +88,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b shadow-lg backdrop-blur-sm">
-      <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary-light to-accent" />
+      <div className="absolute inset-0 bg-gradient-to-r from-accent to-primary via-primary-light" />
 
       <div className="relative container mx-auto">
         <div className="flex h-16 items-center justify-between px-4 sm:px-6">
