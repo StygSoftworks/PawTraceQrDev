@@ -64,7 +64,7 @@ export async function generateAndStorePetQr(ownerId: string, shortId: string) {
   // Decide what the QR should open. Common choices:
   // - Your app’s public pet page: https://yourapp.com/p/<petId>
   // - Or a deep-link like pawtrace://pet/<petId>
-  const qrTarget = `${window.location.origin}/p/${shortId}`;
+  const qrTarget = `https://www.pawtraceqr.com/p/${shortId}`;
 
   const dataUrl = await makeQrDataUrl(qrTarget);
   const blob = await dataUrlToBlob(dataUrl);
