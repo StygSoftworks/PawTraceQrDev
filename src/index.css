@@ -41,11 +41,13 @@
     --primary: 179 70% 45%;           /* #21C7C5 - Vibrant teal */
     --primary-light: 178 77% 68%;     /* #6FE8E4 - Light teal */
     --primary-dark: 179 72% 35%;      /* #179897 - Dark teal */
+    --primary-header: 179 75% 32%;    /* #0F8A88 - Deep teal for headers */
     --primary-foreground: 0 0% 100%;  /* White text */
 
     /* Accent: Orange */
     --accent: 37 100% 64%;            /* #FFB84C - Warm orange */
     --accent-light: 45 100% 76%;      /* #FFE082 - Light orange */
+    --accent-header: 28 90% 45%;      /* #D97706 - Deep orange for headers */
     --accent-foreground: 210 60% 15%; /* Deep slate text */
 
     /* Semantic Colors */
@@ -91,11 +93,13 @@
     --primary: 179 70% 55%;           /* Brighter teal */
     --primary-light: 178 77% 73%;     /* Lighter teal */
     --primary-dark: 179 72% 40%;      /* Darker teal */
+    --primary-header: 179 75% 35%;    /* Deep teal for headers */
     --primary-foreground: 222 20% 12%; /* Dark text for contrast */
 
     /* Accent: Brighter Orange */
     --accent: 37 100% 68%;            /* Brighter orange */
     --accent-light: 45 100% 80%;      /* Lighter orange */
+    --accent-header: 28 90% 48%;      /* Deep orange for headers */
     --accent-foreground: 222 20% 12%; /* Dark text */
 
     /* Semantic Colors */
