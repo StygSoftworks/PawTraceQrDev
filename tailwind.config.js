@@ -9,15 +9,23 @@ export default {
     extend: {
       colors: {
         brand: {
-          indigo: '#3B3A7A',
-          azure: '#4D9FFF',
-          magenta: '#E44C9A',
-          citrine: '#FFD65A',
+          coral: '#F2734B',      /* Vibrant coral-orange */
+          peach: '#FFB088',      /* Soft peach */
+          teal: '#26B5A6',       /* Fresh teal */
+          mint: '#8DD9CC',       /* Light mint */
+          lavender: '#B794F6',   /* Playful lavender */
+          sunshine: '#FFD966',   /* Warm yellow */
+          rose: '#FF6B9D',       /* Cheerful pink */
         },
-        neutral: {
-          mist: '#F5F6F8',
-          steel: '#C2C5CC',
-          charcoal: '#1E1F24',
+        success: {
+          DEFAULT: '#26B5A6',    /* Fresh teal */
+          light: '#8DD9CC',      /* Light mint */
+          dark: '#1A9185',       /* Deep teal */
+        },
+        warning: {
+          DEFAULT: '#FFB366',    /* Warm orange */
+          light: '#FFCF99',      /* Light orange */
+          dark: '#F28B33',       /* Deep orange */
         },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

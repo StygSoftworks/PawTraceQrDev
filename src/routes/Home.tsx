@@ -3,23 +3,7 @@ import { Link } from "react-router-dom";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  PawPrint,
-  QrCode,
-  Shield,
-  Zap,
-  Heart,
-  CheckCircle2,
-  ArrowRight,
-  Smartphone,
-  LayoutGrid,
-  Image as ImageIcon,
-  Lock,
-  MapPin,
-  Bell,
-  History,
-  DollarSign
-} from "lucide-react";
+import { PawPrint, QrCode, Shield, Zap, Heart, CircleCheck as CheckCircle2, ArrowRight, Smartphone, LayoutGrid, Image as ImageIcon, Lock, MapPin, Bell, History, DollarSign } from "lucide-react";
 import {StatsCounters} from "@/components/StatsCounters";
 
 
@@ -27,10 +11,11 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+      <section className="relative overflow-hidden bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-slate-950 dark:via-orange-950/20 dark:to-slate-900">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+          <div className="absolute -top-40 -right-40 w-96 h-96 bg-brand-coral/20 rounded-full blur-3xl" />
+          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-brand-teal/20 rounded-full blur-3xl" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-brand-lavender/10 rounded-full blur-3xl" />
         </div>
 
         <div className="relative container mx-auto px-4 sm:px-6 py-20 md:py-28">
@@ -125,7 +110,7 @@ export default function Home() {
       </section>
 
       {/* Current Features */}
-      <section className="py-16 md:py-24 bg-slate-50 dark:bg-slate-950">
+      <section className="py-16 md:py-24 bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50 dark:bg-slate-950">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="text-center mb-12 space-y-3">
             <Badge variant="outline" className="gap-2">

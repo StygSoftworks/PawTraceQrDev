@@ -9,26 +9,26 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: 
-          "bg-[#3B3A7A] text-white hover:bg-[#3B3A7A]/90 focus-visible:ring-[#3B3A7A]/30 shadow-sm",
+        default:
+          "bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-primary/30 shadow-sm",
         destructive:
-          "bg-[#E44C9A] text-white hover:bg-[#E44C9A]/90 focus-visible:ring-[#E44C9A]/30 shadow-sm",
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90 focus-visible:ring-destructive/30 shadow-sm",
         outline:
-          "border border-[#C2C5CC] bg-transparent hover:bg-[#F5F6F8] hover:text-[#1E1F24] focus-visible:ring-[#3B3A7A]/20 shadow-xs dark:border-[#C2C5CC]/40 dark:hover:bg-[#C2C5CC]/10",
+          "border border-input bg-transparent hover:bg-accent/10 hover:text-accent-foreground focus-visible:ring-ring/20 shadow-xs",
         secondary:
-          "bg-[#4D9FFF] text-white hover:bg-[#4D9FFF]/90 focus-visible:ring-[#4D9FFF]/30 shadow-sm",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/90 focus-visible:ring-secondary/30 shadow-sm",
         ghost:
-          "hover:bg-[#F5F6F8] hover:text-[#1E1F24] focus-visible:ring-[#3B3A7A]/20 dark:hover:bg-[#C2C5CC]/10",
-        link: 
-          "text-[#4D9FFF] underline-offset-4 hover:underline hover:text-[#4D9FFF]/80 focus-visible:ring-[#4D9FFF]/30",
-        success: 
-          "bg-emerald-600 text-white hover:bg-emerald-700 focus-visible:ring-emerald-500/30 shadow-sm",
-        warning: 
-          "bg-[#FFD65A] text-[#1E1F24] hover:bg-[#FFD65A]/90 focus-visible:ring-[#FFD65A]/30 shadow-sm font-semibold",
-        info: 
-          "bg-[#4D9FFF] text-white hover:bg-[#4D9FFF]/90 focus-visible:ring-[#4D9FFF]/30 shadow-sm",
-        light: 
-          "bg-[#F5F6F8] text-[#1E1F24] hover:bg-[#C2C5CC]/30 focus-visible:ring-[#C2C5CC]/20 border border-[#C2C5CC]",
+          "hover:bg-accent/10 hover:text-accent-foreground focus-visible:ring-ring/20",
+        link:
+          "text-primary underline-offset-4 hover:underline hover:text-primary/80 focus-visible:ring-primary/30",
+        success:
+          "bg-success text-white hover:bg-success-dark focus-visible:ring-success/30 shadow-sm",
+        warning:
+          "bg-warning text-foreground hover:bg-warning-dark focus-visible:ring-warning/30 shadow-sm font-semibold",
+        info:
+          "bg-brand-teal text-white hover:bg-brand-teal/90 focus-visible:ring-brand-teal/30 shadow-sm",
+        light:
+          "bg-muted text-foreground hover:bg-muted/80 focus-visible:ring-muted/20 border border-border",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

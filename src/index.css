@@ -1,6 +1,78 @@
-/* @import "tailwindcss";
-@import "tw-animate-css"; */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    /* Cheerful Light Theme - Warm & Welcoming */
+    --background: 42 100% 97%;        /* Soft cream */
+    --foreground: 25 40% 20%;         /* Warm dark brown */
+
+    --card: 0 0% 100%;                /* Pure white cards */
+    --card-foreground: 25 40% 20%;    /* Warm dark brown */
+
+    --popover: 0 0% 100%;             /* Pure white */
+    --popover-foreground: 25 40% 20%; /* Warm dark brown */
+
+    --primary: 20 90% 55%;            /* Vibrant coral-orange */
+    --primary-foreground: 0 0% 100%;  /* White text on primary */
+
+    --secondary: 160 60% 50%;         /* Fresh teal/mint */
+    --secondary-foreground: 0 0% 100%; /* White text on secondary */
+
+    --muted: 42 30% 92%;              /* Soft beige */
+    --muted-foreground: 25 20% 45%;   /* Medium warm gray */
+
+    --accent: 280 65% 60%;            /* Playful purple */
+    --accent-foreground: 0 0% 100%;   /* White text on accent */
+
+    --destructive: 0 85% 60%;         /* Bright red for alerts */
+    --destructive-foreground: 0 0% 100%; /* White text */
+
+    --border: 42 20% 85%;             /* Light warm border */
+    --input: 42 20% 85%;              /* Light warm border */
+    --ring: 20 90% 55%;               /* Coral focus ring */
+
+    --radius: 0.75rem;                /* Friendly rounded corners */
+  }
+
+  .dark {
+    /* Cheerful Dark Theme - Cozy & Inviting */
+    --background: 240 15% 12%;        /* Soft charcoal */
+    --foreground: 42 80% 92%;         /* Warm cream text */
+
+    --card: 240 12% 16%;              /* Slightly lighter charcoal */
+    --card-foreground: 42 80% 92%;    /* Warm cream text */
+
+    --popover: 240 12% 16%;           /* Slightly lighter charcoal */
+    --popover-foreground: 42 80% 92%; /* Warm cream text */
+
+    --primary: 20 90% 60%;            /* Brighter coral-orange */
+    --primary-foreground: 0 0% 100%;  /* White text */
+
+    --secondary: 160 50% 45%;         /* Softer teal */
+    --secondary-foreground: 0 0% 100%; /* White text */
+
+    --muted: 240 10% 25%;             /* Warm muted gray */
+    --muted-foreground: 42 30% 70%;   /* Light warm gray */
+
+    --accent: 280 60% 65%;            /* Lighter playful purple */
+    --accent-foreground: 0 0% 100%;   /* White text */
+
+    --destructive: 0 80% 65%;         /* Softer red for dark mode */
+    --destructive-foreground: 0 0% 100%; /* White text */
+
+    --border: 240 10% 25%;            /* Warm dark border */
+    --input: 240 10% 25%;             /* Warm dark border */
+    --ring: 20 90% 60%;               /* Brighter coral focus ring */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

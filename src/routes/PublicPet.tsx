@@ -75,11 +75,12 @@ export default function PublicPet() {
   return (
     <>
     <ScanLogger shortId={id} askGeo={true} />
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-purple-50 dark:from-slate-950 dark:via-purple-950/20 dark:to-slate-900">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-brand-rose/25 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-brand-lavender/25 rounded-full blur-3xl" />
+        <div className="absolute top-1/3 right-1/3 w-96 h-96 bg-brand-peach/15 rounded-full blur-3xl" />
       </div>
 
       {/* Header */}
@@ -142,7 +143,7 @@ export default function PublicPet() {
             )}
 
             <Card className="overflow-hidden shadow-xl border-primary/10">
-              <CardHeader className="space-y-4 bg-slate-50/50 dark:bg-slate-900/50">
+              <CardHeader className="space-y-4 bg-gradient-to-r from-orange-50/80 to-amber-50/80 dark:bg-slate-900/50">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">
