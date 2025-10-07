@@ -88,7 +88,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/20 shadow-lg backdrop-blur-sm">
-      <div className="absolute inset-0 bg-gradient-to-r from-brand-coral via-brand-peach to-brand-teal opacity-95" />
+      <div className="absolute inset-0 bg-gradient-to-r from-orange-600 via-rose-500 to-pink-600" />
 
       <div className="relative container mx-auto">
         <div className="flex h-16 items-center justify-between px-4 sm:px-6">
