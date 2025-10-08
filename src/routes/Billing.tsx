@@ -9,25 +9,46 @@ import { supabase } from "@/lib/supabase";
 type SubRow = {
   id: string;
   user_id: string;
-  type: "base" | "addon";
-  status: "active" | "canceled" | "suspended" | "expired" | "pending" | string;
-  provider: "paypal";
-  provider_subscription_id: string | null;
-  plan_id: string | null;
-  current_period_end: string | null;
+  paypal_sub_id_base: string | null;
+  paypal_plan_id_base: string | null;
+  paypal_sub_id_addon: string | null;
+  paypal_plan_id_addon: string | null;
+  addon_quantity: number;
+  status: string;
+  next_billing_time: string | null;
   created_at: string;
   updated_at: string;
 };
 
 export default function Billing() {
   const [loading, setLoading] = useState(true);
-  const [subs, setSubs] = useState<SubRow[]>([]);
+  const [subscription, setSubscription] = useState<SubRow | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
 
-  const baseMonthlyUrl = import.meta.env.VITE_PAYPAL_BASE_MONTHLY_URL as string | undefined;
-  const baseYearlyUrl  = import.meta.env.VITE_PAYPAL_BASE_YEARLY_URL as string | undefined;
-  const addonMonthlyUrl = import.meta.env.VITE_PAYPAL_ADDON_MONTHLY_URL as string | undefined;
-  const addonYearlyUrl  = import.meta.env.VITE_PAYPAL_ADDON_YEARLY_URL as string | undefined;
+  // Get plan IDs and environment from env
+  const baseMonthlyPlanId = import.meta.env.VITE_PP_PLAN_BASE_MONTH as string | undefined;
+  const baseYearlyPlanId = import.meta.env.VITE_PP_PLAN_BASE_YEAR as string | undefined;
+  const addonMonthlyPlanId = import.meta.env.VITE_PP_PLAN_ADDON_MONTH as string | undefined;
+  const addonYearlyPlanId = import.meta.env.VITE_PP_PLAN_ADDON_YEAR as string | undefined;
+  
+  const paypalEnv = import.meta.env.VITE_PAYPAL_ENV as string | undefined;
+  const paypalDomain = paypalEnv === 'production' 
+    ? 'https://www.paypal.com'
+    : 'https://www.sandbox.paypal.com';
+
+  // Construct PayPal subscription URLs with custom_id (user_id)
+  const baseMonthlyUrl = baseMonthlyPlanId && userId
+    ? `${paypalDomain}/webapps/billing/plans/subscribe?plan_id=${baseMonthlyPlanId}&custom_id=${userId}`
+    : undefined;
+  const baseYearlyUrl = baseYearlyPlanId && userId
+    ? `${paypalDomain}/webapps/billing/plans/subscribe?plan_id=${baseYearlyPlanId}&custom_id=${userId}`
+    : undefined;
+  const addonMonthlyUrl = addonMonthlyPlanId && userId
+    ? `${paypalDomain}/webapps/billing/plans/subscribe?plan_id=${addonMonthlyPlanId}&custom_id=${userId}`
+    : undefined;
+  const addonYearlyUrl = addonYearlyPlanId && userId
+    ? `${paypalDomain}/webapps/billing/plans/subscribe?plan_id=${addonYearlyPlanId}&custom_id=${userId}`
+    : undefined;
 
   useEffect(() => {
     let mounted = true;
@@ -42,25 +63,30 @@ export default function Billing() {
       setUserId(uid);
 
       if (!uid) {
-        setSubs([]);
+        setSubscription(null);
         setLoading(false);
         return;
       }
 
-      // Fetch only this user's subs (RLS-safe)
+      // Fetch user's subscription row (one row per user)
       const { data, error } = await supabase
         .from("subscriptions")
         .select("*")
         .eq("user_id", uid)
-        .order("created_at", { ascending: false });
+        .single();
 
       if (!mounted) return;
 
       if (error) {
-        console.error("load subscriptions error:", error);
-        setSubs([]);
+        if (error.code === 'PGRST116') {
+          // No subscription row exists yet - this is fine
+          setSubscription(null);
+        } else {
+          console.error("load subscription error:", error);
+          setSubscription(null);
+        }
       } else {
-        setSubs((data ?? []) as SubRow[]);
+        setSubscription(data as SubRow);
       }
       setLoading(false);
     }
@@ -77,13 +103,13 @@ export default function Billing() {
     };
   }, []);
 
-  const { baseActive, addonActiveCount, petLimit } = useMemo(() => {
-    const active = subs.filter(s => s.status === "active");
-    const baseActive = active.some(s => s.type === "base");
-    const addonActiveCount = active.filter(s => s.type === "addon").length;
-    const petLimit = (baseActive ? 3 : 0) + addonActiveCount;
-    return { baseActive, addonActiveCount, petLimit };
-  }, [subs]);
+  const { hasBase, addonCount, petLimit, isActive } = useMemo(() => {
+    const hasBase = !!subscription?.paypal_sub_id_base;
+    const addonCount = subscription?.addon_quantity ?? 0;
+    const isActive = subscription?.status === "active";
+    const petLimit = (hasBase && isActive ? 3 : 0) + addonCount;
+    return { hasBase, addonCount, petLimit, isActive };
+  }, [subscription]);
 
   if (loading) {
     return (
@@ -110,6 +136,10 @@ export default function Billing() {
     );
   }
 
+  const nextBilling = subscription?.next_billing_time
+    ? new Date(subscription.next_billing_time).toLocaleDateString()
+    : null;
+
   return (
     <div className="container mx-auto px-4 sm:px-6 py-10 md:py-14 max-w-3xl">
       <h1 className="text-3xl md:text-4xl font-bold mb-8 tracking-tight">Billing & Subscription</h1>
@@ -119,43 +149,58 @@ export default function Billing() {
         <CardHeader>
           <CardTitle>Your plan summary</CardTitle>
           <CardDescription>
-            {baseActive ? "Base plan active" : "No base plan"} • {addonActiveCount} add-on(s) • Pet limit:{" "}
+            {hasBase ? "Base plan active" : "No base plan"} • {addonCount} add-on(s) • Pet limit:{" "}
             <span className="font-medium">{petLimit}</span>
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {subs.length === 0 ? (
-            <div className="text-sm text-muted-foreground">No subscriptions on file.</div>
+          {!subscription ? (
+            <div className="text-sm text-muted-foreground">No subscription on file.</div>
           ) : (
             <div className="divide-y">
-              {subs.map((s) => {
-                const next = s.current_period_end
-                  ? new Date(s.current_period_end).toLocaleDateString()
-                  : null;
-                return (
-                  <div key={s.id} className="flex justify-between items-center py-3">
-                    <div>
-                      <div className="font-medium">
-                        {s.type === "addon" ? "Extra Pets Add-on" : "PawTrace Base"}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        Status: <Badge variant="outline" className="uppercase">{s.status}</Badge>{" "}
-                        {next && <>• Renews: {next}</>}
-                      </div>
-                      {s.plan_id && (
-                        <div className="text-xs text-muted-foreground">
-                          Plan ID: <span className="font-mono">{s.plan_id}</span>
-                        </div>
-                      )}
+              {hasBase && (
+                <div className="flex justify-between items-center py-3">
+                  <div>
+                    <div className="font-medium">PawTrace Base Plan</div>
+                    <div className="text-xs text-muted-foreground">
+                      Status: <Badge variant="outline" className="uppercase">{subscription.status}</Badge>{" "}
+                      {nextBilling && <>• Renews: {nextBilling}</>}
                     </div>
-                    {s.status === "active" ? (
-                      <CheckCircle className="h-5 w-5 text-green-500" />
-                    ) : (
-                      <CreditCard className="h-5 w-5 text-muted-foreground" />
+                    {subscription.paypal_plan_id_base && (
+                      <div className="text-xs text-muted-foreground">
+                        Plan ID: <span className="font-mono">{subscription.paypal_plan_id_base}</span>
+                      </div>
                     )}
                   </div>
-                );
-              })}
+                  {isActive ? (
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                  ) : (
+                    <CreditCard className="h-5 w-5 text-muted-foreground" />
+                  )}
+                </div>
+              )}
+              
+              {subscription.paypal_sub_id_addon && addonCount > 0 && (
+                <div className="flex justify-between items-center py-3">
+                  <div>
+                    <div className="font-medium">Extra Pets Add-ons ({addonCount})</div>
+                    <div className="text-xs text-muted-foreground">
+                      Status: <Badge variant="outline" className="uppercase">{subscription.status}</Badge>{" "}
+                      {nextBilling && <>• Renews: {nextBilling}</>}
+                    </div>
+                    {subscription.paypal_plan_id_addon && (
+                      <div className="text-xs text-muted-foreground">
+                        Plan ID: <span className="font-mono">{subscription.paypal_plan_id_addon}</span>
+                      </div>
+                    )}
+                  </div>
+                  {isActive ? (
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                  ) : (
+                    <CreditCard className="h-5 w-5 text-muted-foreground" />
+                  )}
+                </div>
+              )}
             </div>
           )}
         </CardContent>
@@ -170,18 +215,27 @@ export default function Billing() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="text-2xl font-bold">$3 / mo</div>
-            <Button asChild className="w-full" disabled={!baseMonthlyUrl}>
+            <Button 
+              asChild 
+              className="w-full" 
+              disabled={!baseMonthlyUrl || hasBase}
+            >
               <a href={baseMonthlyUrl} target="_blank" rel="noreferrer">
-                Subscribe Monthly (PayPal)
+                {hasBase ? "Already Subscribed" : "Subscribe Monthly (PayPal)"}
               </a>
             </Button>
 
             <div className="text-sm text-muted-foreground">or</div>
 
             <div className="text-2xl font-bold">$30 / yr</div>
-            <Button asChild variant="outline" className="w-full" disabled={!baseYearlyUrl}>
+            <Button 
+              asChild 
+              variant="outline" 
+              className="w-full" 
+              disabled={!baseYearlyUrl || hasBase}
+            >
               <a href={baseYearlyUrl} target="_blank" rel="noreferrer">
-                Subscribe Yearly (PayPal)
+                {hasBase ? "Already Subscribed" : "Subscribe Yearly (PayPal)"}
               </a>
             </Button>
           </CardContent>
@@ -194,7 +248,11 @@ export default function Billing() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="text-2xl font-bold">$1.50 / mo</div>
-            <Button asChild className="w-full" disabled={!addonMonthlyUrl}>
+            <Button 
+              asChild 
+              className="w-full" 
+              disabled={!addonMonthlyUrl}
+            >
               <a href={addonMonthlyUrl} target="_blank" rel="noreferrer">
                 Add Monthly (PayPal)
               </a>
@@ -203,7 +261,12 @@ export default function Billing() {
             <div className="text-sm text-muted-foreground">or</div>
 
             <div className="text-2xl font-bold">$18 / yr</div>
-            <Button asChild variant="outline" className="w-full" disabled={!addonYearlyUrl}>
+            <Button 
+              asChild 
+              variant="outline" 
+              className="w-full" 
+              disabled={!addonYearlyUrl}
+            >
               <a href={addonYearlyUrl} target="_blank" rel="noreferrer">
                 Add Yearly (PayPal)
               </a>
@@ -212,9 +275,10 @@ export default function Billing() {
         </Card>
       </div>
 
-      {/* (Optional) Note about PayPal portal */}
+      {/* Note about PayPal portal and managing subscriptions */}
       <p className="mt-6 text-xs text-muted-foreground">
-        Payments are handled by PayPal. After subscribing, it can take a moment for your subscription to appear here.
+        Payments are handled by PayPal. After subscribing, it can take a moment for your subscription to appear here. 
+        To cancel or manage your subscription, log in to PayPal and go to Settings → Payments → Manage automatic payments.
       </p>
     </div>
   );

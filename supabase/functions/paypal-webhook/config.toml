@@ -1,0 +1,2 @@
+[paypal-webhook]
+verify_jwt = false
