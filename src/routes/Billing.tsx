@@ -12,11 +12,11 @@ type SubRow = {
   user_id: string;
   paypal_sub_id_base: string | null;
   paypal_plan_id_base: string | null;
-  paypal_sub_id_addon: string | null;
-  paypal_plan_id_addon: string | null;
+  paypal_addon_subs: Array<{ sub_id: string; plan_id: string }> | null;
   addon_quantity: number;
   status: string;
   next_billing_time: string | null;
+  renewed_at: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -224,7 +224,7 @@ export default function Billing() {
               layout: 'vertical',
               label: 'subscribe'
             },
-            createSubscription: (data: any, actions: any) => {
+            createSubscription: (_data: any, actions: any) => {
               console.log(`Creating subscription for ${label} with plan:`, planId.slice(0, 10) + '...');
               return actions.subscription.create({
                 plan_id: planId,
@@ -381,7 +381,7 @@ export default function Billing() {
                 </div>
               )}
               
-              {subscription.paypal_sub_id_addon && addonCount > 0 && (
+              {subscription.paypal_addon_subs && subscription.paypal_addon_subs.length > 0 && addonCount > 0 && (
                 <div className="flex justify-between items-center py-3">
                   <div>
                     <div className="font-medium">Extra Pets Add-ons ({addonCount})</div>

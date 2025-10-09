@@ -10,8 +10,8 @@ const PAYPAL_CLIENT_ID = Deno.env.get("PAYPAL_CLIENT_ID");
 const PAYPAL_CLIENT_SECRET = Deno.env.get("PAYPAL_CLIENT_SECRET");
 const PAYPAL_WEBHOOK_ID = Deno.env.get("PAYPAL_WEBHOOK_ID");
 
-const PP_API_BASE = PAYPAL_ENV === "live" 
-  ? "https://api-m.paypal.com" 
+const PP_API_BASE = PAYPAL_ENV === "live"
+  ? "https://api-m.paypal.com"
   : "https://api-m.sandbox.paypal.com";
 
 // Plan IDs to determine type
@@ -31,12 +31,12 @@ async function getPayPalAccessToken() {
     },
     body: "grant_type=client_credentials",
   });
-  
+
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`PayPal token error: ${res.status} - ${text}`);
   }
-  
+
   const json = await res.json();
   return json.access_token;
 }
@@ -60,7 +60,7 @@ async function verifyWebhookSignature(headers: Headers, event: any) {
 
   try {
     const accessToken = await getPayPalAccessToken();
-    
+
     const body = {
       transmission_id,
       transmission_time,
@@ -105,12 +105,12 @@ function isAddonPlan(planId: string): boolean {
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { 
-      headers: { 
+    return new Response('ok', {
+      headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST',
         'Access-Control-Allow-Headers': 'Content-Type',
-      } 
+      }
     });
   }
 
@@ -167,9 +167,9 @@ serve(async (req) => {
           .from("subscriptions")
           .select("*")
           .eq("user_id", customId)
-          .single();
+          .maybeSingle();
 
-        if (fetchErr && fetchErr.code !== 'PGRST116') {
+        if (fetchErr) {
           console.error("Fetch error:", fetchErr);
           return new Response("error", { status: 500 });
         }
@@ -190,6 +190,7 @@ serve(async (req) => {
             status: "active",
             next_billing_time: nextBillingTime,
             addon_quantity: 0,
+            paypal_addon_subs: [],
             renewed_at: new Date().toISOString(),
           };
 
@@ -204,21 +205,36 @@ serve(async (req) => {
 
           console.log(`Base subscription ${subId} activated for ${customId}`);
         } else if (isAddon) {
-          // Create or update addon subscription
+          // Add addon subscription to JSONB array
+          const currentAddons = (existing?.paypal_addon_subs || []) as Array<{ sub_id: string; plan_id: string }>;
           const currentQuantity = existing?.addon_quantity ?? 0;
-          const newQuantity = currentQuantity + 1;
+
+          // Check if this sub_id already exists
+          const existingIndex = currentAddons.findIndex(a => a.sub_id === subId);
+
+          let newAddons;
+          let newQuantity;
+
+          if (existingIndex >= 0) {
+            // Update existing addon
+            newAddons = [...currentAddons];
+            newAddons[existingIndex] = { sub_id: subId, plan_id: planId };
+            newQuantity = currentQuantity;
+          } else {
+            // Add new addon
+            newAddons = [...currentAddons, { sub_id: subId, plan_id: planId }];
+            newQuantity = currentQuantity + 1;
+          }
 
           const payload = existing ? {
-            paypal_sub_id_addon: subId,
-            paypal_plan_id_addon: planId,
+            paypal_addon_subs: newAddons,
             addon_quantity: newQuantity,
             status: "active",
             next_billing_time: nextBillingTime,
             updated_at: new Date().toISOString(),
           } : {
             user_id: customId,
-            paypal_sub_id_addon: subId,
-            paypal_plan_id_addon: planId,
+            paypal_addon_subs: newAddons,
             addon_quantity: 1,
             status: "active",
             next_billing_time: nextBillingTime,
@@ -241,14 +257,27 @@ serve(async (req) => {
       case "BILLING.SUBSCRIPTION.UPDATED": {
         if (!subId) break;
 
-        // Find which column has this subscription ID
+        // Find subscription by checking both base and addon arrays
         const { data: subs, error: findErr } = await svc
           .from("subscriptions")
-          .select("*")
-          .or(`paypal_sub_id_base.eq.${subId},paypal_sub_id_addon.eq.${subId}`)
-          .limit(1);
+          .select("*");
 
         if (findErr || !subs || subs.length === 0) {
+          console.warn("Subscription query error:", findErr);
+          break;
+        }
+
+        // Search for the subscription
+        const sub = subs.find(s => {
+          if (s.paypal_sub_id_base === subId) return true;
+          if (s.paypal_addon_subs) {
+            const addons = s.paypal_addon_subs as Array<{ sub_id: string; plan_id: string }>;
+            return addons.some(a => a.sub_id === subId);
+          }
+          return false;
+        });
+
+        if (!sub) {
           console.warn("Subscription not found for update:", subId);
           break;
         }
@@ -259,7 +288,7 @@ serve(async (req) => {
             next_billing_time: nextBillingTime,
             updated_at: new Date().toISOString(),
           })
-          .eq("user_id", subs[0].user_id);
+          .eq("user_id", sub.user_id);
 
         if (error) {
           console.error("Update error:", error);
@@ -273,32 +302,45 @@ serve(async (req) => {
         if (!subId) break;
 
         const newStatus = eventType.includes("CANCELLED") ? "canceled" :
-                          eventType.includes("SUSPENDED") ? "suspended" : 
+                          eventType.includes("SUSPENDED") ? "suspended" :
                           "expired";
 
         // Find which subscription this is
         const { data: subs, error: findErr } = await svc
           .from("subscriptions")
-          .select("*")
-          .or(`paypal_sub_id_base.eq.${subId},paypal_sub_id_addon.eq.${subId}`)
-          .limit(1);
+          .select("*");
 
         if (findErr || !subs || subs.length === 0) {
+          console.warn("Subscription query error:", findErr);
+          break;
+        }
+
+        // Search for the subscription
+        const sub = subs.find(s => {
+          if (s.paypal_sub_id_base === subId) return true;
+          if (s.paypal_addon_subs) {
+            const addons = s.paypal_addon_subs as Array<{ sub_id: string; plan_id: string }>;
+            return addons.some(a => a.sub_id === subId);
+          }
+          return false;
+        });
+
+        if (!sub) {
           console.warn("Subscription not found:", subId);
           break;
         }
 
-        const sub = subs[0];
         const isBase = sub.paypal_sub_id_base === subId;
 
         if (isBase) {
           // Base canceled - update status and clear base fields
+          const hasAddons = sub.paypal_addon_subs && (sub.paypal_addon_subs as any[]).length > 0;
           const { error } = await svc
             .from("subscriptions")
             .update({
               paypal_sub_id_base: null,
               paypal_plan_id_base: null,
-              status: sub.paypal_sub_id_addon ? "active" : newStatus,
+              status: hasAddons ? "active" : newStatus,
               updated_at: new Date().toISOString(),
             })
             .eq("user_id", sub.user_id);
@@ -307,15 +349,18 @@ serve(async (req) => {
             console.error("Cancel base error:", error);
           }
         } else {
-          // Addon canceled - decrease quantity
+          // Addon canceled - remove from array and decrease quantity
+          const currentAddons = (sub.paypal_addon_subs || []) as Array<{ sub_id: string; plan_id: string }>;
+          const newAddons = currentAddons.filter(a => a.sub_id !== subId);
           const newQuantity = Math.max(0, (sub.addon_quantity ?? 1) - 1);
+
+          const hasBase = !!sub.paypal_sub_id_base;
           const { error } = await svc
             .from("subscriptions")
             .update({
-              paypal_sub_id_addon: newQuantity > 0 ? sub.paypal_sub_id_addon : null,
-              paypal_plan_id_addon: newQuantity > 0 ? sub.paypal_plan_id_addon : null,
+              paypal_addon_subs: newAddons,
               addon_quantity: newQuantity,
-              status: sub.paypal_sub_id_base || newQuantity > 0 ? "active" : newStatus,
+              status: hasBase || newQuantity > 0 ? "active" : newStatus,
               updated_at: new Date().toISOString(),
             })
             .eq("user_id", sub.user_id);
