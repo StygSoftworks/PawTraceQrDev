@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/command";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ChevronsUpDown, PawPrint, Palette, Calendar, Weight, FileText, Syringe, Camera, CircleAlert as AlertCircle, Sparkles, Check } from "lucide-react";
+import { ChevronsUpDown, PawPrint, Palette, Calendar, Weight, FileText, Syringe, Camera, CircleAlert as AlertCircle, Sparkles } from "lucide-react";
 import {
   DOG_BREED_NAMES,
   CAT_PATTERN_NAMES,
@@ -34,9 +34,6 @@ import type { OptimizedImage } from "@/components/ImagePickerOptimize";
 
 import { useAuth } from "@/auth/AuthProvider";
 import { createPet, updatePet, uploadPetPhoto } from "@/lib/pets";
-import { THEME_PRESETS } from "@/lib/themes";
-import { usePetTheme } from "@/hooks/usePetTheme";
-import { cn } from "@/lib/utils";
 
 /* ---------------------------- Zod Schema ---------------------------- */
 
@@ -108,13 +105,6 @@ export function PetDialog({ mode, open, onOpenChange, initialPet, onSubmit }: Pr
   const selectedBreedOrPattern = form.watch("breed");
 
   const [breedOpen, setBreedOpen] = React.useState(false);
-
-  const { themeId, updatePetTheme } = usePetTheme(initialPet?.id);
-  const [selectedTheme, setSelectedTheme] = React.useState(themeId);
-
-  React.useEffect(() => {
-    setSelectedTheme(themeId);
-  }, [themeId]);
   const optimizedBlobRef = React.useRef<Blob | null>(null);
 
   const breedOptions = React.useMemo(() => {
@@ -204,10 +194,6 @@ export function PetDialog({ mode, open, onOpenChange, initialPet, onSubmit }: Pr
         }
 
         row = await updatePet(id, patch);
-      }
-
-      if (row?.id) {
-        await updatePetTheme(selectedTheme);
       }
 
       onSubmit?.(values);
@@ -500,48 +486,6 @@ export function PetDialog({ mode, open, onOpenChange, initialPet, onSubmit }: Pr
                     className="h-9"
                   />
                 </div>
-              </div>
-            </div>
-          </section>
-
-          <Separator />
-
-          {/* Theme Section */}
-          <section className="space-y-4">
-            <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-              <Palette className="h-4 w-4 text-primary" />
-              Page Theme
-            </div>
-
-            <div className="pl-6 border-l-2 border-primary/20">
-              <p className="text-sm text-muted-foreground mb-4">
-                Choose a color theme for your pet's public page
-              </p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {Object.values(THEME_PRESETS).map((theme) => (
-                  <button
-                    key={theme.id}
-                    type="button"
-                    onClick={() => setSelectedTheme(theme.id)}
-                    className={cn(
-                      "relative p-3 rounded-lg border-2 transition-all hover:scale-105",
-                      selectedTheme === theme.id
-                        ? "border-primary shadow-md"
-                        : "border-border hover:border-primary/50"
-                    )}
-                  >
-                    <div className={cn(
-                      "h-16 rounded-md mb-2 bg-gradient-to-br",
-                      theme.previewGradient
-                    )} />
-                    <p className="text-xs font-medium text-center">{theme.name}</p>
-                    {selectedTheme === theme.id && (
-                      <div className="absolute top-2 right-2 h-5 w-5 bg-primary rounded-full flex items-center justify-center">
-                        <Check className="h-3 w-3 text-primary-foreground" />
-                      </div>
-                    )}
-                  </button>
-                ))}
               </div>
             </div>
           </section>

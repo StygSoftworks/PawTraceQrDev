@@ -1,5 +1,5 @@
 // src/routes/PublicPet.tsx
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -13,7 +13,6 @@ import { ScanLogger } from "@/components/ScanLogger";
 import { PetScanBadge } from "@/components/PetScanBadge";
 import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
-import { applyTheme, DEFAULT_THEME } from "@/lib/themes";
 type PublicPet = {
   id: string;
   name: string;
@@ -27,7 +26,6 @@ type PublicPet = {
   short_id: string;
   owner_email: string | null;
   owner_phone: string | null;
-  theme_preset?: string | null;
 };
 
 function timeSince(iso?: string | null) {
@@ -60,36 +58,19 @@ export default function PublicPet() {
     queryKey: ["public-pet", id],
     enabled: !!id,
     queryFn: async (): Promise<PublicPet | null> => {
-      const { data: petData, error: petError } = await supabase
+      const { data, error } = await supabase
         .from("public_pets")
         .select("*")
         .eq("short_id", id)
         .maybeSingle();
 
-      if (petError) throw petError;
-      if (!petData) return null;
 
-      const { data: themeData } = await supabase
-        .from("pet_themes")
-        .select("theme_preset")
-        .eq("pet_id", petData.id)
-        .maybeSingle();
-
-      return {
-        ...petData,
-        theme_preset: themeData?.theme_preset,
-      } as PublicPet;
+      if (error) throw error;
+      console.log(data);
+      return data as PublicPet | null;
     },
     staleTime: 60_000,
   });
-
-  useEffect(() => {
-    if (data?.theme_preset) {
-      applyTheme(data.theme_preset, false);
-    } else {
-      applyTheme(DEFAULT_THEME, false);
-    }
-  }, [data?.theme_preset]);
 
   return (
     <>
