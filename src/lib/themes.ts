@@ -14,7 +14,7 @@ export interface Theme {
   id: string;
   name: string;
   description: string;
-  category: 'nature' | 'playful' | 'elegant' | 'ocean' | 'minimalist';
+  category: 'default' | 'nature' | 'playful' | 'elegant' | 'ocean' | 'minimalist';
   colors: {
     light: ThemeColors;
     dark: ThemeColors;
@@ -23,6 +23,37 @@ export interface Theme {
 }
 
 export const THEME_PRESETS: Record<string, Theme> = {
+  default: {
+    id: 'default',
+    name: 'Default',
+    description: 'Original PawTraceQR teal and orange theme',
+    category: 'default',
+    colors: {
+      light: {
+        primary: '#21C7C5',
+        secondary: '#e5e7eb',
+        accent: '#FFB84C',
+        background: '#FFFDF8',
+        text: '#0F172A',
+        cardBg: '#FFFFFF',
+        cardBorder: '#e5e7eb',
+        buttonPrimary: '#21C7C5',
+        buttonSecondary: '#FFB84C',
+      },
+      dark: {
+        primary: '#2DD4D2',
+        secondary: '#374151',
+        accent: '#FFC670',
+        background: '#1F2937',
+        text: '#FFFDF8',
+        cardBg: '#374151',
+        cardBorder: '#4B5563',
+        buttonPrimary: '#2DD4D2',
+        buttonSecondary: '#FFC670',
+      },
+    },
+    previewGradient: 'from-teal-100 via-orange-100 to-amber-100',
+  },
   nature: {
     id: 'nature',
     name: 'Nature',
@@ -180,7 +211,7 @@ export const THEME_PRESETS: Record<string, Theme> = {
   },
 };
 
-export const DEFAULT_THEME = 'minimalist';
+export const DEFAULT_THEME = 'default';
 
 function hexToHSL(hex: string): string {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -214,6 +245,36 @@ function hexToHSL(hex: string): string {
   return `${h} ${s}% ${lPercent}%`;
 }
 
+function darkenColor(hex: string, percent: number): string {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!result) return hex;
+
+  let r = parseInt(result[1], 16);
+  let g = parseInt(result[2], 16);
+  let b = parseInt(result[3], 16);
+
+  r = Math.max(0, Math.floor(r * (1 - percent / 100)));
+  g = Math.max(0, Math.floor(g * (1 - percent / 100)));
+  b = Math.max(0, Math.floor(b * (1 - percent / 100)));
+
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+}
+
+function lightenColor(hex: string, percent: number): string {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!result) return hex;
+
+  let r = parseInt(result[1], 16);
+  let g = parseInt(result[2], 16);
+  let b = parseInt(result[3], 16);
+
+  r = Math.min(255, Math.floor(r + (255 - r) * (percent / 100)));
+  g = Math.min(255, Math.floor(g + (255 - g) * (percent / 100)));
+  b = Math.min(255, Math.floor(b + (255 - b) * (percent / 100)));
+
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+}
+
 export function applyTheme(themeId: string, darkMode: boolean = false) {
   const theme = THEME_PRESETS[themeId] || THEME_PRESETS[DEFAULT_THEME];
   const colors = darkMode ? theme.colors.dark : theme.colors.light;
@@ -221,16 +282,31 @@ export function applyTheme(themeId: string, darkMode: boolean = false) {
   const root = document.documentElement;
 
   root.style.setProperty('--primary', hexToHSL(colors.primary));
+  root.style.setProperty('--primary-light', hexToHSL(lightenColor(colors.primary, 20)));
+  root.style.setProperty('--primary-dark', hexToHSL(darkenColor(colors.primary, 15)));
+  root.style.setProperty('--primary-header', hexToHSL(darkenColor(colors.primary, 25)));
+  root.style.setProperty('--primary-foreground', hexToHSL(colors.background));
+
   root.style.setProperty('--secondary', hexToHSL(colors.secondary));
+  root.style.setProperty('--secondary-foreground', hexToHSL(colors.text));
+
   root.style.setProperty('--accent', hexToHSL(colors.accent));
+  root.style.setProperty('--accent-light', hexToHSL(lightenColor(colors.accent, 20)));
+  root.style.setProperty('--accent-header', hexToHSL(darkenColor(colors.accent, 25)));
+  root.style.setProperty('--accent-foreground', hexToHSL(colors.text));
+
   root.style.setProperty('--background', hexToHSL(colors.background));
   root.style.setProperty('--foreground', hexToHSL(colors.text));
+
   root.style.setProperty('--card', hexToHSL(colors.cardBg));
   root.style.setProperty('--card-foreground', hexToHSL(colors.text));
+
   root.style.setProperty('--border', hexToHSL(colors.cardBorder));
   root.style.setProperty('--input', hexToHSL(colors.cardBorder));
-  root.style.setProperty('--primary-foreground', hexToHSL(colors.background));
-  root.style.setProperty('--accent-foreground', hexToHSL(colors.text));
+  root.style.setProperty('--ring', hexToHSL(colors.primary));
+
+  root.style.setProperty('--muted', hexToHSL(colors.secondary));
+  root.style.setProperty('--muted-foreground', hexToHSL(darkenColor(colors.text, 30)));
 }
 
 export function getContrastRatio(color1: string, color2: string): number {
