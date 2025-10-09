@@ -182,20 +182,55 @@ export const THEME_PRESETS: Record<string, Theme> = {
 
 export const DEFAULT_THEME = 'minimalist';
 
+function hexToHSL(hex: string): string {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!result) return '0 0% 0%';
+
+  let r = parseInt(result[1], 16) / 255;
+  let g = parseInt(result[2], 16) / 255;
+  let b = parseInt(result[3], 16) / 255;
+
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h = 0;
+  let s = 0;
+  const l = (max + min) / 2;
+
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+      case g: h = ((b - r) / d + 2) / 6; break;
+      case b: h = ((r - g) / d + 4) / 6; break;
+    }
+  }
+
+  h = Math.round(h * 360);
+  s = Math.round(s * 100);
+  const lPercent = Math.round(l * 100);
+
+  return `${h} ${s}% ${lPercent}%`;
+}
+
 export function applyTheme(themeId: string, darkMode: boolean = false) {
   const theme = THEME_PRESETS[themeId] || THEME_PRESETS[DEFAULT_THEME];
   const colors = darkMode ? theme.colors.dark : theme.colors.light;
 
   const root = document.documentElement;
-  root.style.setProperty('--theme-primary', colors.primary);
-  root.style.setProperty('--theme-secondary', colors.secondary);
-  root.style.setProperty('--theme-accent', colors.accent);
-  root.style.setProperty('--theme-background', colors.background);
-  root.style.setProperty('--theme-text', colors.text);
-  root.style.setProperty('--theme-card-bg', colors.cardBg);
-  root.style.setProperty('--theme-card-border', colors.cardBorder);
-  root.style.setProperty('--theme-button-primary', colors.buttonPrimary);
-  root.style.setProperty('--theme-button-secondary', colors.buttonSecondary);
+
+  root.style.setProperty('--primary', hexToHSL(colors.primary));
+  root.style.setProperty('--secondary', hexToHSL(colors.secondary));
+  root.style.setProperty('--accent', hexToHSL(colors.accent));
+  root.style.setProperty('--background', hexToHSL(colors.background));
+  root.style.setProperty('--foreground', hexToHSL(colors.text));
+  root.style.setProperty('--card', hexToHSL(colors.cardBg));
+  root.style.setProperty('--card-foreground', hexToHSL(colors.text));
+  root.style.setProperty('--border', hexToHSL(colors.cardBorder));
+  root.style.setProperty('--input', hexToHSL(colors.cardBorder));
+  root.style.setProperty('--primary-foreground', hexToHSL(colors.background));
+  root.style.setProperty('--accent-foreground', hexToHSL(colors.text));
 }
 
 export function getContrastRatio(color1: string, color2: string): number {

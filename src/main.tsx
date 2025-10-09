@@ -22,6 +22,7 @@ const Pricing = lazy(() => import("./routes/Pricing"));
 
 import "./index.css";
 import { AuthProvider } from "./auth/AuthProvider";
+import { ThemeProvider } from "./components/ThemeProvider";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -41,7 +42,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <BrowserRouter>
       <AuthProvider>
         <QueryClientProvider client={queryClient}>
-          <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading…</div>}>
+          <ThemeProvider>
+            <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading…</div>}>
 
             <Routes>
               {/* Private app shell */}
@@ -70,9 +72,10 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
               {/* (optional) catch-all */}
               {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
             </Routes>
-          </Suspense>
+            </Suspense>
 
-          <ReactQueryDevtools initialIsOpen={false} />
+            <ReactQueryDevtools initialIsOpen={false} />
+          </ThemeProvider>
         </QueryClientProvider>
       </AuthProvider>
     </BrowserRouter>
