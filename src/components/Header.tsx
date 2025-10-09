@@ -2,9 +2,10 @@ import { NavLink, useLocation } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
-import { Menu, LogIn, UserPlus, MessageSquare, ShieldCheck, Tag, CreditCard, Hop as Home, LayoutDashboard, User } from "lucide-react";
+import { Menu, LogIn, UserPlus, MessageSquare, ShieldCheck, Tag, CreditCard, Hop as Home, LayoutDashboard, User, Moon, Sun } from "lucide-react";
 import { useAuth } from "@/auth/AuthProvider";
 import { useProfile } from "@/profile/useProfile";
+import { useTheme } from "@/hooks/useTheme";
 import Logo from "@/components/Logo";
 import { HeaderAuth } from "@/components/HeaderAuth";
 import type * as React from "react";
@@ -83,6 +84,7 @@ const MobileNavItem = ({
 export default function Header() {
   const { user, loading } = useAuth();
   const { data: profile } = useProfile();
+  const { darkMode, toggleDarkMode } = useTheme();
 
   const navItems = user ? getAuthenticatedNavItems(profile?.role) : getPublicNavItems();
 
@@ -152,8 +154,20 @@ export default function Header() {
             )}
           </div>
 
-          {/* Right side: Auth */}
-          <HeaderAuth />
+          {/* Right side: Theme Toggle + Auth */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleDarkMode}
+              className="hover:bg-white/10 text-white"
+              title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              <span className="sr-only">Toggle theme</span>
+            </Button>
+            <HeaderAuth />
+          </div>
         </div>
       </div>
     </header>

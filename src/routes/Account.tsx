@@ -3,8 +3,8 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { useAuth } from "@/auth/AuthProvider"; // or "@/hooks/useAuth" if that's your path
-import { useProfile } from "@/profile/useProfile"; // the React Query hook we outlined earlier
+import { useAuth } from "@/auth/AuthProvider";
+import { useProfile } from "@/profile/useProfile";
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ThemeSelector } from "@/components/ThemeSelector";
 
 const ProfileSchema = z.object({
   display_name: z.string().min(1, "Please enter your name").max(80),
@@ -81,16 +83,28 @@ export default function Account() {
     resetPw({ new_password: "" });
   };
 
-  if (!user) return null; // Protected route should guard this already
+  if (!user) return null;
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Account</CardTitle>
-          <CardDescription>Manage your profile and sign-in details.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
+    <div className="mx-auto max-w-4xl space-y-6 p-4">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Account Settings</h1>
+        <p className="text-muted-foreground mt-2">Manage your profile, appearance, and security settings</p>
+      </div>
+
+      <Tabs defaultValue="profile" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="profile">Profile & Security</TabsTrigger>
+          <TabsTrigger value="appearance">Appearance</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="profile" className="space-y-6 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Profile Information</CardTitle>
+              <CardDescription>Manage your profile and sign-in details</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
           {/* Readonly basics */}
           <div className="grid gap-2">
             <Label>Email</Label>
@@ -194,17 +208,23 @@ export default function Account() {
               </Button>
             </div>
           </form>
-        </CardContent>
+            </CardContent>
 
-        <CardFooter className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            Signed in as <span className="text-foreground">{user.email}</span>
-          </div>
-          <Button variant="ghost" onClick={() => signOut()}>
-            Sign out
-          </Button>
-        </CardFooter>
-      </Card>
+            <CardFooter className="flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">
+                Signed in as <span className="text-foreground">{user.email}</span>
+              </div>
+              <Button variant="ghost" onClick={() => signOut()}>
+                Sign out
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="appearance" className="mt-6">
+          <ThemeSelector />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
