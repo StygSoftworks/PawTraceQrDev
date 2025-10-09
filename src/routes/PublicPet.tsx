@@ -84,11 +84,18 @@ export default function PublicPet() {
   });
 
   useEffect(() => {
-    if (data?.theme_preset) {
-      applyTheme(data.theme_preset, false);
-    } else {
-      applyTheme(DEFAULT_THEME, false);
-    }
+    const petTheme = data?.theme_preset || DEFAULT_THEME;
+    applyTheme(petTheme, false);
+
+    return () => {
+      const userPrefs = localStorage.getItem('theme_preset');
+      const userDarkMode = localStorage.getItem('dark_mode') === 'true';
+      if (userPrefs) {
+        applyTheme(userPrefs, userDarkMode);
+      } else {
+        applyTheme(DEFAULT_THEME, userDarkMode);
+      }
+    };
   }, [data?.theme_preset]);
 
   return (

@@ -1,23 +1,30 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/auth/AuthProvider';
+import { useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { applyTheme, loadThemePreference, saveThemePreference, DEFAULT_THEME } from '@/lib/themes';
 import { ThemeContext } from '@/hooks/useTheme';
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
+  const location = useLocation();
   const [themeId, setThemeId] = useState<string>(DEFAULT_THEME);
   const [darkMode, setDarkMode] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  const isPetPage = location.pathname.startsWith('/p/');
 
   useEffect(() => {
     const initTheme = async () => {
       const localPrefs = loadThemePreference();
       setThemeId(localPrefs.themeId);
       setDarkMode(localPrefs.darkMode);
-      applyTheme(localPrefs.themeId, localPrefs.darkMode);
 
-      if (user) {
+      if (!isPetPage) {
+        applyTheme(localPrefs.themeId, localPrefs.darkMode);
+      }
+
+      if (user && !isPetPage) {
         try {
           const { data, error } = await supabase
             .from('user_themes')
@@ -42,7 +49,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     };
 
     initTheme();
-  }, [user]);
+  }, [user, isPetPage]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -59,7 +66,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     setThemeId(newThemeId);
     setDarkMode(useDarkMode);
-    applyTheme(newThemeId, useDarkMode);
+
+    if (!isPetPage) {
+      applyTheme(newThemeId, useDarkMode);
+    }
+
     saveThemePreference(newThemeId, useDarkMode);
 
     if (user) {
