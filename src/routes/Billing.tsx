@@ -42,7 +42,7 @@ export default function Billing() {
   const addonMonthlyPlanId = import.meta.env.VITE_PP_PLAN_ADDON_MONTH as string | undefined;
   const addonYearlyPlanId = import.meta.env.VITE_PP_PLAN_ADDON_YEAR as string | undefined;
   
-  const paypalEnv = (import.meta.env.VITE_PAYPAL_ENV as string | undefined) || 'production';
+  const paypalEnv = (import.meta.env.VITE_PAYPAL_ENV as string | undefined) || 'sandbox';
   const paypalClientId = import.meta.env.VITE_PAYPAL_CLIENT_ID as string | undefined;
 
   // Refs for PayPal button containers
@@ -94,7 +94,7 @@ export default function Billing() {
     }
 
     // Check if script already exists
-    const existingScript = document.querySelector('script[src*="paypal.com/sdk/js"]');
+    const existingScript = document.querySelector('script[src*="sandbox.paypal.com/sdk/js"]');
     if (existingScript) {
       setPaypalLoaded(true);
       return;
@@ -102,6 +102,7 @@ export default function Billing() {
 
     const script = document.createElement("script");
     // Use sandbox or production based on environment
+    console.log(paypalEnv);
     const sdkUrl = paypalEnv === 'sandbox' 
       ? `https://www.sandbox.paypal.com/sdk/js?client-id=${paypalClientId}&vault=true&intent=subscription`
       : `https://www.paypal.com/sdk/js?client-id=${paypalClientId}&vault=true&intent=subscription`;
