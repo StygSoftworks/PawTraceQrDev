@@ -22,6 +22,14 @@ export default function About() {
 
           <Card className="shadow-xl border-primary/20">
             <CardContent className="p-8 md:p-12 space-y-6">
+              <div className="flex justify-center mb-6">
+                <img
+                  src="/theoandbutterball.webp"
+                  alt="Theo and Butterball"
+                  className="rounded-lg shadow-md max-w-full h-auto"
+                />
+              </div>
+
               <div className="flex items-start gap-4">
                 <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
                   <PawPrint className="h-6 w-6 text-primary" />
