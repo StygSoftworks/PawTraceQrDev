@@ -2,7 +2,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
-import { Menu, LogIn, UserPlus, MessageSquare, ShieldCheck, Tag, CreditCard, Hop as Home, LayoutDashboard, User, Moon, Sun } from "lucide-react";
+import { Menu, LogIn, UserPlus, MessageSquare, ShieldCheck, Tag, CreditCard, Hop as Home, LayoutDashboard, User, Moon, Sun, Info } from "lucide-react";
 import { useAuth } from "@/auth/AuthProvider";
 import { useProfile } from "@/profile/useProfile";
 import { useTheme } from "@/hooks/useTheme";
@@ -32,7 +32,7 @@ const getAuthenticatedNavItems = (userRole?: string) => {
 
 const getPublicNavItems = () => [
   { to: "/", label: "Home", icon: Home },
-  { to: "/pricing", label: "Pricing", icon: Tag },
+  { to: "/about", label: "About", icon: Info },
   { to: "/reviews", label: "Reviews", icon: MessageSquare },
 ];
 
