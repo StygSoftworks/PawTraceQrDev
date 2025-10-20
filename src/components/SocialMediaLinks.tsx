@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 type SocialLink = {
   platform: string;
-  value: string | null;
+  value: string | null | undefined;
   icon: React.ReactNode;
   color: string;
   getUrl: (value: string) => string;
