@@ -33,7 +33,6 @@ const getAuthenticatedNavItems = (userRole?: string) => {
 const getPublicNavItems = () => [
   { to: "/", label: "Home", icon: Home },
   { to: "/about", label: "About", icon: Info },
-  { to: "/pricing", label: "Pricing", icon: Tag },
   { to: "/reviews", label: "Reviews", icon: MessageSquare },
 ];
 
