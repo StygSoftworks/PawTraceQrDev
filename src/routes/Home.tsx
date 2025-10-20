@@ -33,8 +33,8 @@ export default function Home() {
             </h1>
 
             <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Create a pet profile, we auto-generate a short QR link and a public page
-              showing basic info and “Missing” status. Easy to scan, easy to share.
+              Create a pet profile, we make a QR code and a public page
+              showing basic contact info and if your pet is missing. Easy to scan, easy to share.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
