@@ -2,10 +2,10 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Loader2, CreditCard, CheckCircle, AlertCircle } from "lucide-react";
+import { Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/auth/AuthProvider";
+import SubscriptionSummary from "@/components/SubscriptionSummary";
 
 type SubRow = {
   id: string;
@@ -246,7 +246,7 @@ export default function Billing() {
                   .eq("user_id", userId)
                   .maybeSingle();
                 if (subData) setSubscription(subData as SubRow);
-              }, 2000);
+              }, 10000);
             },
             onCancel: () => {
               console.log('ℹ️ Subscription cancelled by user');
@@ -351,57 +351,15 @@ export default function Billing() {
         </Card>
       )}
 
-      {/* Summary */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Your plan summary</CardTitle>
-          <CardDescription>
-            {hasBase ? "Base plan active" : "No base plan"} • {addonCount} add-on(s) • Pet limit:{" "}
-            <span className="font-medium">{petLimit}</span>
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {!subscription ? (
-            <div className="text-sm text-muted-foreground">No subscription on file.</div>
-          ) : (
-            <div className="divide-y">
-              {hasBase && (
-                <div className="flex justify-between items-center py-3">
-                  <div>
-                    <div className="font-medium">PawTrace Base Plan</div>
-                    <div className="text-xs text-muted-foreground">
-                      Status: <Badge variant="outline" className="uppercase">{subscription.status}</Badge>{" "}
-                      {nextBilling && <>• Renews: {nextBilling}</>}
-                    </div>
-                  </div>
-                  {isActive ? (
-                    <CheckCircle className="h-5 w-5 text-green-500" />
-                  ) : (
-                    <CreditCard className="h-5 w-5 text-muted-foreground" />
-                  )}
-                </div>
-              )}
-              
-              {subscription.paypal_addon_subs && subscription.paypal_addon_subs.length > 0 && addonCount > 0 && (
-                <div className="flex justify-between items-center py-3">
-                  <div>
-                    <div className="font-medium">Extra Pets Add-ons ({addonCount})</div>
-                    <div className="text-xs text-muted-foreground">
-                      Status: <Badge variant="outline" className="uppercase">{subscription.status}</Badge>{" "}
-                      {nextBilling && <>• Renews: {nextBilling}</>}
-                    </div>
-                  </div>
-                  {isActive ? (
-                    <CheckCircle className="h-5 w-5 text-green-500" />
-                  ) : (
-                    <CreditCard className="h-5 w-5 text-muted-foreground" />
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Subscription Summary Component */}
+      <SubscriptionSummary
+        hasBase={hasBase}
+        addonCount={addonCount}
+        petLimit={petLimit}
+        subscription={subscription}
+        isActive={isActive}
+        nextBilling={nextBilling}
+      />
 
       {/* Purchase cards */}
       <div className="grid gap-4 sm:grid-cols-2">

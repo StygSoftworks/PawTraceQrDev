@@ -14,14 +14,22 @@ import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ThemeSelector } from "@/components/ThemeSelector";
+import { SocialMediaInput } from "@/components/SocialMediaInput";
 
 const ProfileSchema = z.object({
   display_name: z.string().min(1, "Please enter your name").max(80),
-  avatar_url: z.string().url("Must be a valid URL").or(z.literal("")).optional(),
+  avatar_url: z.string().max(500).url("Must be a valid URL").or(z.literal("")).optional(),
   phone: z.string().max(15, "Must be at most 15 characters").optional(),
   share_email: z.boolean().optional(),
   share_phone: z.boolean().optional(),
-
+  share_social_links: z.boolean().optional(),
+  // Social media fields
+  instagram: z.string().max(100).optional(),
+  facebook: z.string().max(100).optional(),
+  twitter: z.string().max(100).optional(),
+  telegram: z.string().max(100).optional(),
+  whatsapp: z.string().max(20).optional(),
+  website: z.string().max(200).url("Must be a valid URL").or(z.literal("")).optional(),
 });
 
 type ProfileForm = z.infer<typeof ProfileSchema>;
@@ -43,11 +51,20 @@ export default function Account() {
     formState: { errors, isSubmitting: savingProfile },
   } = useForm<ProfileForm>({
     resolver: zodResolver(ProfileSchema),
-    defaultValues: { display_name: "", avatar_url: "", phone: "" },
+    defaultValues: { 
+      display_name: "", 
+      avatar_url: "", 
+      phone: "",
+      instagram: "",
+      facebook: "",
+      twitter: "",
+      telegram: "",
+      whatsapp: "",
+      website: "",
+    },
   });
 
   useEffect(() => {
-    // Load profile defaults when fetched
     if (profile) {
       reset({
         display_name: profile.display_name ?? "",
@@ -55,11 +72,17 @@ export default function Account() {
         phone: profile.phone ?? "",
         share_email: profile.share_email ?? false,
         share_phone: profile.share_phone ?? false,
+        share_social_links: profile.share_social_links ?? false,
+        instagram: profile.instagram ?? "",
+        facebook: profile.facebook ?? "",
+        twitter: profile.twitter ?? "",
+        telegram: profile.telegram ?? "",
+        whatsapp: profile.whatsapp ?? "",
+        website: profile.website ?? "",
       });
     }
   }, [profile, reset]);
 
-  // Password form
   const {
     register: registerPw,
     handleSubmit: handleSubmitPw,
@@ -71,11 +94,10 @@ export default function Account() {
   });
 
   const onSaveProfile = async (vals: ProfileForm) => {
-    await update.mutateAsync(vals); // upsert { id: user!.id, ...vals } inside hook
+    await update.mutateAsync(vals);
   };
 
   const onChangePassword = async (vals: PasswordForm) => {
-    // Uses Supabase Auth to update password for current user
     const { error } = await (await import("@/lib/supabase")).supabase.auth.updateUser({
       password: vals.new_password,
     });
@@ -102,112 +124,147 @@ export default function Account() {
           <Card>
             <CardHeader>
               <CardTitle>Profile Information</CardTitle>
-              <CardDescription>Manage your profile and sign-in details</CardDescription>
+              <CardDescription>Manage your profile and contact details</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-          {/* Readonly basics */}
-          <div className="grid gap-2">
-            <Label>Email</Label>
-            <Input value={user.email ?? ""} disabled />
-          </div>
-
-          <Separator />
-
-          {/* Profile form */}
-          <form onSubmit={handleSubmit(onSaveProfile)} className="grid gap-4">
-            
-            {/* Display Name */}
-            <div className="grid gap-2">
-              <Label htmlFor="display_name">Display name</Label>
-              <Input id="display_name" placeholder="Jane Doe" {...register("display_name")} />
-              {errors.display_name && <p className="text-sm text-destructive">{errors.display_name.message}</p>}
-            </div>
-
-            {/* Avatar URL */}
-            <div className="grid gap-2">
-              <Label htmlFor="avatar_url">Avatar URL (optional)</Label>
-              <Input id="avatar_url" placeholder="https://…" {...register("avatar_url")} />
-              {errors.avatar_url && <p className="text-sm text-destructive">{errors.avatar_url.message}</p>}
-              {/* If you later want uploads, swap this for your ImagePickerOptimize and set avatar_url to a blob URL or uploaded URL */}
-            </div>
-
-            {/* Phone Number */}
-            <div className="grid gap-2">
-              <Label htmlFor="phone">Phone number (optional)</Label>
-              <Input id="phone" placeholder="+1 (555) 123-4567" {...register("phone")} />
-              {errors.phone && <p className="text-sm text-destructive">{errors.phone.message}</p>}
-            </div>
-
-            {/* Sharing Preferences */}
-            <div className="grid gap-2">
-              <Label>Sharing preferences</Label>
-              <div className="flex flex-col space-y-2">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    {...register("share_email")}
-                    id="share_email"
-                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                    defaultChecked={profile?.share_email ?? false}
-                  />
-                  <Label htmlFor="share_email" className="select-none">
-                    Share my email with pet finders
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    {...register("share_phone")}
-                    id="share_phone"
-                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                    defaultChecked={profile?.share_phone ?? false}
-                  />
-                  <Label htmlFor="share_phone" className="select-none">
-                    Share my phone number with pet finders
-                  </Label>
-                </div>
+              <div className="grid gap-2">
+                <Label>Email</Label>
+                <Input value={user.email ?? ""} disabled />
               </div>
-            </div>
 
-            {update.isError && (
-              <Alert variant="destructive">
-                <AlertDescription>{String((update.error as any)?.message ?? "Save failed")}</AlertDescription>
-              </Alert>
-            )}
-            {update.isSuccess && (
-              <Alert>
-                <AlertDescription>Profile updated.</AlertDescription>
-              </Alert>
-            )}
+              <Separator />
 
-            <div className="flex items-center gap-2">
-              <Button type="submit" disabled={savingProfile || isLoading}>
-                {savingProfile ? "Saving…" : "Save changes"}
-              </Button>
-              <Button type="button" variant="outline" onClick={() => reset()}>
-                Reset
-              </Button>
-            </div>
-          </form>
+              <form onSubmit={handleSubmit(onSaveProfile)} className="grid gap-6">
+                <div className="grid gap-2">
+                  <Label htmlFor="display_name">Display name</Label>
+                  <Input id="display_name" placeholder="Jane Doe" {...register("display_name")} />
+                  {errors.display_name && <p className="text-sm text-destructive">{errors.display_name.message}</p>}
+                </div>
 
-          <Separator />
+                <div className="grid gap-2">
+                  <Label htmlFor="avatar_url">Avatar URL (optional)</Label>
+                  <Input id="avatar_url" placeholder="https://…" {...register("avatar_url")} />
+                  {errors.avatar_url && <p className="text-sm text-destructive">{errors.avatar_url.message}</p>}
+                </div>
 
-          {/* Password change */}
-          <form onSubmit={handleSubmitPw(onChangePassword)} className="grid gap-3">
-            <div className="grid gap-2">
-              <Label htmlFor="new_password">New password</Label>
-              <Input id="new_password" type="password" placeholder="••••••••" {...registerPw("new_password")} />
-              {pwErrors.new_password && (
-                <p className="text-sm text-destructive">{pwErrors.new_password.message}</p>
-              )}
-            </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="phone">Phone number (optional)</Label>
+                  <Input id="phone" placeholder="+1 (555) 123-4567" {...register("phone")} />
+                  {errors.phone && <p className="text-sm text-destructive">{errors.phone.message}</p>}
+                </div>
 
-            <div className="flex items-center gap-2">
-              <Button type="submit" disabled={savingPw}>
-                {savingPw ? "Updating…" : "Update password"}
-              </Button>
-            </div>
-          </form>
+                <Separator />
+
+                <SocialMediaInput register={register} errors={errors} />
+
+                <Separator />
+
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-base font-semibold">Privacy & Sharing</Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Control what information is visible when someone scans your pet's QR code
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-3 pl-4 border-l-2 border-primary/20">
+                    <div className="flex items-start space-x-3">
+                      <input
+                        type="checkbox"
+                        {...register("share_email")}
+                        id="share_email"
+                        className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                      />
+                      <div className="flex-1">
+                        <Label htmlFor="share_email" className="cursor-pointer font-medium">
+                          Share my email address
+                        </Label>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Allow pet finders to contact you via email
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start space-x-3">
+                      <input
+                        type="checkbox"
+                        {...register("share_phone")}
+                        id="share_phone"
+                        className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                      />
+                      <div className="flex-1">
+                        <Label htmlFor="share_phone" className="cursor-pointer font-medium">
+                          Share my phone number
+                        </Label>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Allow pet finders to call or text you
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start space-x-3">
+                      <input
+                        type="checkbox"
+                        {...register("share_social_links")}
+                        id="share_social_links"
+                        className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                      />
+                      <div className="flex-1">
+                        <Label htmlFor="share_social_links" className="cursor-pointer font-medium">
+                          Share my social media & website links
+                        </Label>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Display your social media profiles to pet finders
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {update.isError && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{String((update.error as any)?.message ?? "Save failed")}</AlertDescription>
+                  </Alert>
+                )}
+                {update.isSuccess && (
+                  <Alert>
+                    <AlertDescription>Profile updated successfully.</AlertDescription>
+                  </Alert>
+                )}
+
+                <div className="flex items-center gap-2">
+                  <Button type="submit" disabled={savingProfile || isLoading}>
+                    {savingProfile ? "Saving…" : "Save changes"}
+                  </Button>
+                  <Button type="button" variant="outline" onClick={() => reset()}>
+                    Reset
+                  </Button>
+                </div>
+              </form>
+
+              <Separator />
+
+              <form onSubmit={handleSubmitPw(onChangePassword)} className="grid gap-3">
+                <div>
+                  <Label className="text-base font-semibold">Change Password</Label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Update your password to keep your account secure
+                  </p>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="new_password">New password</Label>
+                  <Input id="new_password" type="password" placeholder="••••••••" {...registerPw("new_password")} />
+                  {pwErrors.new_password && (
+                    <p className="text-sm text-destructive">{pwErrors.new_password.message}</p>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button type="submit" disabled={savingPw}>
+                    {savingPw ? "Updating…" : "Update password"}
+                  </Button>
+                </div>
+              </form>
             </CardContent>
 
             <CardFooter className="flex items-center justify-between">

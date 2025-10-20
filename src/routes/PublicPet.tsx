@@ -11,9 +11,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PawPrint, TriangleAlert as AlertTriangle, Phone, Mail, MapPin, Info, Hop as Home, Heart, Clock } from "lucide-react";
 import { ScanLogger } from "@/components/ScanLogger";
 import { PetScanBadge } from "@/components/PetScanBadge";
+import { SocialMediaLinks } from "@/components/SocialMediaLinks";
 import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
 import { applyTheme, DEFAULT_THEME } from "@/lib/themes";
+
 type PublicPet = {
   id: string;
   name: string;
@@ -27,6 +29,12 @@ type PublicPet = {
   short_id: string;
   owner_email: string | null;
   owner_phone: string | null;
+  owner_instagram: string | null;
+  owner_facebook: string | null;
+  owner_twitter: string | null;
+  owner_telegram: string | null;
+  owner_whatsapp: string | null;
+  owner_website: string | null;
   theme_preset?: string | null;
 };
 
@@ -65,6 +73,8 @@ export default function PublicPet() {
         .select("*")
         .eq("short_id", id)
         .maybeSingle();
+      
+      console.log("Fetched pet data:", petData);
 
       if (petError) throw petError;
       if (!petData) return null;
@@ -98,21 +108,23 @@ export default function PublicPet() {
     };
   }, [data?.theme_preset]);
 
+  const hasContactInfo = data?.owner_email || data?.owner_phone;
+  const hasSocialLinks = data?.owner_instagram || data?.owner_facebook || 
+                         data?.owner_twitter || data?.owner_telegram || 
+                         data?.owner_whatsapp || data?.owner_website;
+
   return (
     <>
     <ScanLogger shortId={id} askGeo={true} />
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-purple-50 dark:from-slate-950 dark:via-purple-950/20 dark:to-slate-900">
-      {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-brand-rose/25 rounded-full blur-3xl" />
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-brand-lavender/25 rounded-full blur-3xl" />
         <div className="absolute top-1/3 right-1/3 w-96 h-96 bg-brand-peach/15 rounded-full blur-3xl" />
       </div>
 
-      {/* Header */}
       <Header />
 
-      {/* Main content */}
       <main className="relative mx-auto max-w-5xl px-4 sm:px-6 py-8 md:py-12">
         {isLoading ? (
           <Card className="overflow-hidden shadow-xl">
@@ -153,7 +165,6 @@ export default function PublicPet() {
           </Card>
         ) : (
           <div className="space-y-6">
-            {/* Missing Alert */}
             {data.missing && (
               <Alert variant="destructive" className="animate-in fade-in-50 slide-in-from-top-2 duration-300">
                 <AlertTriangle className="h-5 w-5" />
@@ -217,9 +228,7 @@ export default function PublicPet() {
               </CardHeader>
 
               <CardContent className="grid gap-8 p-6 lg:grid-cols-[1fr,400px]">
-                {/* Left Column - Info */}
                 <div className="space-y-6 order-2 lg:order-1">
-                  {/* About Section */}
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 text-lg font-semibold">
                       <Info className="h-5 w-5 text-primary" />
@@ -230,8 +239,7 @@ export default function PublicPet() {
                     </p>
                   </div>
 
-                  {/* Contact Section */}
-                  {(data.owner_email || data.owner_phone) && (
+                  {(hasContactInfo || hasSocialLinks) && (
                     <div className="space-y-3">
                       <div className="flex items-center gap-2 text-lg font-semibold">
                         <Phone className="h-5 w-5 text-primary" />
@@ -293,38 +301,48 @@ export default function PublicPet() {
                                 }
                               </p>
                             </div>
-
-                          
                           </div>
                         )}
 
-                        {/* Pets Scan Count */}
                         <PetScanBadge petId={data.id} days={30} label="QR Code Scans" />
-
                       </div>
 
-                      <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                        {data.owner_phone && (
-                          <Button asChild className="flex-1 gap-2" variant={"success"}>
-                            <a href={`tel:${data.owner_phone}`}>
-                              <Phone className="h-4 w-4" />
-                              Call Owner
-                            </a>
-                          </Button>
-                        )}
-                        {data.owner_email && (
-                          <Button asChild variant="outline" className="flex-1 gap-2">
-                            <a href={`mailto:${data.owner_email}`}>
-                              <Mail className="h-4 w-4" />
-                              Send Email
-                            </a>
-                          </Button>
-                        )}
-                      </div>
+                      {hasContactInfo && (
+                        <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                          {data.owner_phone && (
+                            <Button asChild className="flex-1 gap-2" variant="success">
+                              <a href={`tel:${data.owner_phone}`}>
+                                <Phone className="h-4 w-4" />
+                                Call Owner
+                              </a>
+                            </Button>
+                          )}
+                          {data.owner_email && (
+                            <Button asChild variant="outline" className="flex-1 gap-2">
+                              <a href={`mailto:${data.owner_email}`}>
+                                <Mail className="h-4 w-4" />
+                                Send Email
+                              </a>
+                            </Button>
+                          )}
+                        </div>
+                      )}
+
+                      {hasSocialLinks && (
+                        <div className="pt-4">
+                          <SocialMediaLinks
+                            instagram={data.owner_instagram}
+                            facebook={data.owner_facebook}
+                            twitter={data.owner_twitter}
+                            telegram={data.owner_telegram}
+                            whatsapp={data.owner_whatsapp}
+                            website={data.owner_website}
+                          />
+                        </div>
+                      )}
                     </div>
                   )}
 
-                  {/* Share Location Helper */}
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 text-lg font-semibold">
                       <MapPin className="h-5 w-5 text-primary" />
@@ -341,7 +359,6 @@ export default function PublicPet() {
                   </div>
                 </div>
 
-                {/* Right Column - Photo */}
                 <div className="space-y-4 order-1 lg:order-2">
                   {data.photo_url ? (
                     <div className="space-y-3">
@@ -371,16 +388,12 @@ export default function PublicPet() {
                     </div>
                   )}
                 </div>
-
-         
               </CardContent>
             </Card>
-
           </div>
         )}
       </main>
 
-      {/* Full Image Modal */}
       <Dialog open={imageModalOpen} onOpenChange={setImageModalOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-white dark:bg-slate-900">
           <DialogHeader className="p-6 pb-0">
