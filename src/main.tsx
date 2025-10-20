@@ -18,6 +18,7 @@ const Reviews = lazy(() => import("./routes/Reviews"));
 const ReviewsModeration = lazy(() => import("./routes/ReviewsModeration"));
 const Billing = lazy(() => import("./routes/Billing"));
 const Pricing = lazy(() => import("./routes/Pricing"));
+const About = lazy(() => import("./routes/About"));
 
 
 import "./index.css";
@@ -64,6 +65,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                 <Route path="billing/success" element={<BillingSuccess />} />
                 <Route path="billing/cancel" element={<BillingCancel />} />
                 <Route path="billing" element={<Billing />} />
+                <Route path="about" element={<About />} />
               </Route>
 
               {/* Public QR landing page (no auth, no AppLayout) */}
