@@ -14,9 +14,10 @@ const getAuthenticatedNavItems = (userRole?: string) => {
   const items = [
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { to: "/account", label: "Account", icon: User },
-    { to: "/pricing", label: "Pricing", icon: Tag },
+    //{ to: "/pricing", label: "Pricing", icon: Tag },
     { to: "/billing", label: "Billing", icon: CreditCard },
     { to: "/feedback", label: "Feedback", icon: MessageSquare },
+    { to: "/about", label: "About", icon: Info },
   ];
 
   if (userRole === "admin" || userRole === "owner") {

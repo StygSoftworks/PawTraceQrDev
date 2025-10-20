@@ -44,7 +44,7 @@ export default function About() {
                   </p>
 
                   <p>
-                    Here's the thing: <span className="font-semibold">Theo wasn't lost</span>. He wasn't in danger. He was just being Theo—walking around, exploring, living his best cat life. But without a simple way to identify him and contact us, a routine neighborhood stroll turned into an unnecessary ordeal.
+                    Here's the thing: <span className="font-semibold">Theo wasn't lost. He wasn't in danger. He was right around the block!</span> He was just being Theo—walking around, exploring, living his best cat life. But without a simple way to identify him and contact us, a routine neighborhood stroll turned into an unnecessary ordeal.
                   </p>
 
                   <p>

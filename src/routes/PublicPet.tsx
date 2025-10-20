@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { PawPrint, TriangleAlert as AlertTriangle, Phone, Mail, MapPin, Info, Hop as Home, Heart, Clock } from "lucide-react";
+import { PawPrint, TriangleAlert as AlertTriangle, Phone, Mail, MapPin, Info, Hop as Home, Heart, Clock, FileText } from "lucide-react";
 import { ScanLogger } from "@/components/ScanLogger";
 import { PetScanBadge } from "@/components/PetScanBadge";
 import { SocialMediaLinks } from "@/components/SocialMediaLinks";
@@ -22,6 +22,7 @@ type PublicPet = {
   species: "dog" | "cat" | "other";
   breed: string | null;
   description: string | null;
+  notes: string | null;
   color: string | null;
   photo_url: string | null;
   missing: boolean;
@@ -238,6 +239,20 @@ export default function PublicPet() {
                       {data.description || "No additional description provided."}
                     </p>
                   </div>
+
+                  {data.notes && (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-lg font-semibold">
+                        <FileText className="h-5 w-5 text-primary" />
+                        Important Notes
+                      </div>
+                      <Alert className="border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950">
+                        <AlertDescription className="text-amber-900 dark:text-amber-100 whitespace-pre-wrap">
+                          {data.notes}
+                        </AlertDescription>
+                      </Alert>
+                    </div>
+                  )}
 
                   {(hasContactInfo || hasSocialLinks) && (
                     <div className="space-y-3">
