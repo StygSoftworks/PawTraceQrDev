@@ -12,6 +12,7 @@ import { PawPrint, TriangleAlert as AlertTriangle, Phone, Mail, MapPin, Info, Ho
 import { ScanLogger } from "@/components/ScanLogger";
 import { PetScanBadge } from "@/components/PetScanBadge";
 import { SocialMediaLinks } from "@/components/SocialMediaLinks";
+import { LocationShareDialog } from "@/components/LocationShareDialog";
 import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
 import { applyTheme, DEFAULT_THEME } from "@/lib/themes";
@@ -28,6 +29,7 @@ type PublicPet = {
   missing: boolean;
   missing_since: string | null;
   short_id: string;
+  owner_id: string;
   owner_email: string | null;
   owner_phone: string | null;
   owner_instagram: string | null;
@@ -64,6 +66,7 @@ function timeSince(iso?: string | null) {
 export default function PublicPet() {
   const { id } = useParams();
   const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [locationDialogOpen, setLocationDialogOpen] = useState(false);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["public-pet", id],
@@ -364,11 +367,18 @@ export default function PublicPet() {
                       Found This Pet?
                     </div>
                     <Alert>
-                      <AlertDescription className="space-y-2">
+                      <AlertDescription className="space-y-3">
                         <p className="text-sm">
-                          Please share your location with the owner when you contact them. 
-                          This helps reunite pets faster!
+                          Help reunite {data.name} with their owner faster by sharing your location.
                         </p>
+                        <Button
+                          onClick={() => setLocationDialogOpen(true)}
+                          className="w-full gap-2"
+                          size="lg"
+                        >
+                          <MapPin className="h-4 w-4" />
+                          Share My Location
+                        </Button>
                       </AlertDescription>
                     </Alert>
                   </div>
@@ -428,6 +438,16 @@ export default function PublicPet() {
           )}
         </DialogContent>
       </Dialog>
+
+      {data && (
+        <LocationShareDialog
+          petId={data.id}
+          ownerId={data.owner_id}
+          petName={data.name}
+          open={locationDialogOpen}
+          onOpenChange={setLocationDialogOpen}
+        />
+      )}
     </div>
     </>
   );

@@ -18,6 +18,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { RecentActivityTable } from "@/components/RecentActivityTable";
 import { QRCodeDialog } from "@/components/QRCodeDialog";
 import { DeletePetDialog } from "@/components/DeletePetDialog";
+import { LocationSharesCard } from "@/components/LocationSharesCard";
 import { useQROperations } from "@/hooks/useQROperations";
 
 import { 
@@ -123,14 +124,18 @@ export default function Dashboard() {
       </div>
 
       <Tabs defaultValue="pets" className="space-y-4">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
+        <TabsList className="grid w-full max-w-2xl grid-cols-3">
           <TabsTrigger value="pets" className="gap-2">
             <PawPrint className="h-4 w-4" />
             My Pets
           </TabsTrigger>
+          <TabsTrigger value="locations" className="gap-2">
+            <Activity className="h-4 w-4" />
+            Locations
+          </TabsTrigger>
           <TabsTrigger value="activity" className="gap-2">
             <Activity className="h-4 w-4" />
-            Recent Activity
+            Activity
           </TabsTrigger>
         </TabsList>
 
@@ -397,6 +402,11 @@ export default function Dashboard() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+        </TabsContent>
+
+        {/* Locations tab */}
+        <TabsContent value="locations" className="mt-4">
+          <LocationSharesCard />
         </TabsContent>
 
         {/* Activity tab */}
