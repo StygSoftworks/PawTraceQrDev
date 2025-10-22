@@ -35,8 +35,8 @@ export function RecentActivityTable({ days = 14 }: { days?: number }) {
               <TableRow>
                 <TableHead>When</TableHead>
                 <TableHead>Pet</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Referrer</TableHead>
+                {/* <TableHead>Location</TableHead>
+                <TableHead>Referrer</TableHead> */}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -46,14 +46,14 @@ export function RecentActivityTable({ days = 14 }: { days?: number }) {
                     {new Date(r.scanned_at).toLocaleString()}
                   </TableCell>
                   <TableCell className="font-medium">{r.pet_name}</TableCell>
-                  <TableCell className="text-muted-foreground">
+                  {/* <TableCell className="text-muted-foreground">
                     {r.city || r.region || r.country
                       ? [r.city, r.region, r.country].filter(Boolean).join(", ")
                       : <Badge variant="outline">unknown</Badge>}
                   </TableCell>
                   <TableCell className="truncate max-w-[240px] text-muted-foreground">
                     {r.referrer || "—"}
-                  </TableCell>
+                  </TableCell> */}
                 </TableRow>
               ))}
             </TableBody>

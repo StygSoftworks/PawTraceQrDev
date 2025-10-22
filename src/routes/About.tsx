@@ -36,11 +36,11 @@ export default function About() {
                 </div>
                 <div className="space-y-6 text-lg leading-relaxed text-foreground">
                   <p>
-                    It all started when my wife brought two incredible cats into our lives: <span className="font-semibold text-primary">Theo</span> and <span className="font-semibold text-primary">Butterball</span>. These aren't just any cats—they're social butterflies who love exploring the world around them. As indoor-outdoor cats, they enjoy the freedom to roam, meet neighbors, and soak up the sunshine.
+                    When my wife brought two incredible cats into our lives: <span className="font-semibold text-primary">Theo</span> and <span className="font-semibold text-primary">Butterball</span>, we knew these aren't just any cats—they're social butterflies who love exploring the world around them. As indoor-outdoor cats, they enjoy the freedom to roam, meet neighbors, and soak up the sunshine.
                   </p>
 
                   <p>
-                    Most days, their adventures are delightfully uneventful. But one day, Theo decided to take his wandering a bit too far. He was just doing what he does best—strolling around the neighborhood, probably charming everyone he met—when something unexpected happened.
+                    Most days their adventures are delightful and uneventful, One day Theo was strolling the neighborhood, charming everyone— when something unexpected happened.
                   </p>
 
                   <p className="font-medium text-lg">
@@ -48,11 +48,11 @@ export default function About() {
                   </p>
 
                   <p>
-                    Yes, you read that right. Our friendly, adventurous cat was picked up and brought to the local authorities. While we're grateful they found him and kept him safe, the whole process took much longer than it should have. There were phone calls, paperwork, and precious hours spent tracking him down—all because there wasn't an easy way for the finder to know exactly who he belonged to and how to reach us immediately.
+                    You read that right. Our friendly, adventurous cat was picked up and brought to the local authorities. While we're grateful they kept him safe, the process took longer than it should have. There were phone calls, paperwork, and precious hours spent tracking him down—because there wasn't an easy way for the finder to know exactly who he belonged to and how to reach us immediately.
                   </p>
 
                   <p>
-                    Here's the thing: <span className="font-semibold">Theo wasn't lost. He wasn't in danger. He was right around the block!</span> He was just being Theo—walking around, exploring, living his best cat life. But without a simple way to identify him and contact us, a routine neighborhood stroll turned into an unnecessary ordeal.
+                    Here's the thing: Theo wasn't lost. He wasn't in danger. He was around the block! He was just living his best cat life. Without a simple way to identify him and contact us, a routine neighborhood stroll turned into an unnecessary ordeal.
                   </p>
 
                   <p>
@@ -70,12 +70,6 @@ export default function About() {
                   <p>
                     Because every pet deserves to wander safely, and every owner deserves peace of mind.
                   </p>
-
-                  <div className="pt-6 border-t border-primary/20">
-                    <p className="text-base text-muted-foreground italic">
-                      Theo and Butterball continue their daily adventures, now with QR code tags that make sure they can always find their way home—without a police escort.
-                    </p>
-                  </div>
                 </div>
               </div>
             </CardContent>
