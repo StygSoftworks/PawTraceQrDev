@@ -3,7 +3,6 @@ import { listRecentScansByOwner } from "@/lib/analytics";
 import { useAuth } from "@/auth/AuthProvider";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 
 export function RecentActivityTable({ days = 14 }: { days?: number }) {
   const { user } = useAuth();

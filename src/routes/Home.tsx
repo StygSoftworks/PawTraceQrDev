@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PawPrint, QrCode, Shield, Zap, Heart, CircleCheck as CheckCircle2, ArrowRight, Smartphone, LayoutGrid, Image as ImageIcon, Lock, MapPin, Bell, History, DollarSign } from "lucide-react";
 import {StatsCounters} from "@/components/StatsCounters";
+import { TrustBadges } from "@/components/TrustBadges";
 
 
 export default function Home() {
@@ -51,6 +52,8 @@ export default function Home() {
                 </Link>
               </Button>
             </div>
+
+            <TrustBadges variant="hero" className="pt-6" />
           </div>
         </div>
       </section>

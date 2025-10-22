@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PawPrint, Heart } from "lucide-react";
+import { TrustBadges } from "@/components/TrustBadges";
 
 export default function About() {
   return (
@@ -72,6 +73,19 @@ export default function About() {
                   </p>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-xl border-primary/20">
+            <CardContent className="p-8 md:p-12">
+              <div className="text-center space-y-4 mb-6">
+                <h2 className="text-2xl md:text-3xl font-bold">Our Commitment to You</h2>
+                <p className="text-muted-foreground max-w-2xl mx-auto">
+                  We built PawTraceQR with privacy and trust at its core. Your data belongs to you,
+                  and we're committed to keeping it that way.
+                </p>
+              </div>
+              <TrustBadges variant="stacked" className="max-w-xl mx-auto" />
             </CardContent>
           </Card>
         </div>
