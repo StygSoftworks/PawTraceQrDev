@@ -93,7 +93,7 @@ export async function createPet(payload: PetInsert) {
     .from("pets")
     .select(`
       *,
-      qr_code:qr_codes!qr_code_id(*)
+      qr_code:qr_codes(qr_code_id)
     `)
     .eq("id", pet.id)
     .single();
@@ -134,7 +134,7 @@ export async function listPetsByOwner(ownerId: string) {
     .from("pets")
     .select(`
       *,
-      qr_code:qr_codes!qr_code_id(*)
+      qr_code:qr_codes(qr_code_id)
     `)
     .eq("owner_id", ownerId)
     .order("created_at", { ascending: false });
@@ -209,7 +209,7 @@ export async function ensureQrForAll(ownerId: string) {
     .select(`
       id,
       qr_code_id,
-      qr_code:qr_codes!qr_code_id(id, short_id, qr_url)
+      qr_code:qr_codes(qr_code_id)
     `)
     .eq("owner_id", ownerId);
   if (error) throw error;
