@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { QrCode, Copy, Download, RefreshCw } from "lucide-react";
 import { generateAndStorePetQr } from "@/lib/qr";
-import { supabase } from "@/lib/supabase";
+import { updatePet } from "@/lib/pets";
 import type { PetRow } from "@/lib/pets";
 
 interface QRCodeDialogProps {
@@ -27,19 +27,16 @@ interface QRCodeDialogProps {
 export function QRCodeDialog({ pet, open, onOpenChange, ownerId }: QRCodeDialogProps) {
   const qc = useQueryClient();
   const [isGenerating, setIsGenerating] = useState(false);
-  const [qrUrl, setQrUrl] = useState<string | null>(pet?.qr_code?.qr_url ?? null);
+  const [qrUrl, setQrUrl] = useState<string | null>(pet?.qr_url ?? null);
 
   // Generate QR if missing
   const handleGenerate = async () => {
-    if (!pet || qrUrl || !pet.qr_code?.short_id) return;
-
+    if (!pet || qrUrl) return;
+    
     setIsGenerating(true);
     try {
-      const newQrUrl = await generateAndStorePetQr(ownerId, pet.qr_code.short_id);
-      await supabase
-        .from("qr_codes")
-        .update({ qr_url: newQrUrl })
-        .eq("id", pet.qr_code.id);
+      const newQrUrl = await generateAndStorePetQr(ownerId, pet.short_id);
+      await updatePet(pet.id, { qr_url: newQrUrl });
       setQrUrl(newQrUrl);
       await qc.invalidateQueries({ queryKey: ["pets", ownerId] });
     } catch (e: any) {
@@ -51,7 +48,7 @@ export function QRCodeDialog({ pet, open, onOpenChange, ownerId }: QRCodeDialogP
 
   // Auto-generate on open if missing
   const handleOpenChange = (newOpen: boolean) => {
-    if (newOpen && pet && !pet.qr_code?.qr_url && !qrUrl) {
+    if (newOpen && pet && !pet.qr_url && !qrUrl) {
       handleGenerate();
     }
     onOpenChange(newOpen);
@@ -77,7 +74,7 @@ export function QRCodeDialog({ pet, open, onOpenChange, ownerId }: QRCodeDialogP
     a.click();
   };
 
-  const currentQrUrl = qrUrl || pet?.qr_code?.qr_url;
+  const currentQrUrl = qrUrl || pet?.qr_url;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
