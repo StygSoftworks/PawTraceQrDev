@@ -1,16 +1,30 @@
-// src/lib/qr.ts
-//import QRCode from "qrcode";
 import { supabase } from "@/lib/supabase";
 
-// src/lib/qr.ts
+const QR_OPTIONS = {
+  errorCorrectionLevel: "M" as const,
+  margin: 1,
+  color: { dark: "#000000", light: "#ffffff" },
+};
+
 export async function makeQrDataUrl(text: string) {
-  const QRCode = (await import("qrcode")).default; // lazy-load
+  const QRCode = (await import("qrcode")).default;
   return await QRCode.toDataURL(text, {
-    errorCorrectionLevel: "M",
-    margin: 1,
+    ...QR_OPTIONS,
     scale: 8,
-    color: { dark: "#000000", light: "#ffffff" },
   });
+}
+
+export async function makeQrSvgString(text: string) {
+  const QRCode = (await import("qrcode")).default;
+  return await QRCode.toString(text, {
+    ...QR_OPTIONS,
+    type: "svg",
+    width: 512,
+  });
+}
+
+export function getPublicPetUrl(shortId: string): string {
+  return `https://www.pawtraceqr.com/p/${shortId}`;
 }
 
 

@@ -11,7 +11,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PawPrint, TriangleAlert as AlertTriangle, Phone, Mail, MapPin, Info, Hop as Home, Heart, Clock, FileText } from "lucide-react";
 import { ScanLogger } from "@/components/ScanLogger";
 import { PetScanBadge } from "@/components/PetScanBadge";
-import { SocialMediaLinks } from "@/components/SocialMediaLinks";
 import { LocationShareDialog } from "@/components/LocationShareDialog";
 import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
@@ -29,15 +28,10 @@ type PublicPet = {
   missing: boolean;
   missing_since: string | null;
   short_id: string;
+  qr_url: string | null;
   owner_id: string;
   owner_email: string | null;
   owner_phone: string | null;
-  owner_instagram: string | null;
-  owner_facebook: string | null;
-  owner_twitter: string | null;
-  owner_telegram: string | null;
-  owner_whatsapp: string | null;
-  owner_website: string | null;
   theme_preset?: string | null;
 };
 
@@ -113,9 +107,6 @@ export default function PublicPet() {
   }, [data?.theme_preset]);
 
   const hasContactInfo = data?.owner_email || data?.owner_phone;
-  const hasSocialLinks = data?.owner_instagram || data?.owner_facebook || 
-                         data?.owner_twitter || data?.owner_telegram || 
-                         data?.owner_whatsapp || data?.owner_website;
 
   return (
     <>
@@ -257,7 +248,7 @@ export default function PublicPet() {
                     </div>
                   )}
 
-                  {(hasContactInfo || hasSocialLinks) && (
+                  {hasContactInfo && (
                     <div className="space-y-3">
                       <div className="flex items-center gap-2 text-lg font-semibold">
                         <Phone className="h-5 w-5 text-primary" />
@@ -346,18 +337,6 @@ export default function PublicPet() {
                         </div>
                       )}
 
-                      {hasSocialLinks && (
-                        <div className="pt-4">
-                          <SocialMediaLinks
-                            instagram={data.owner_instagram}
-                            facebook={data.owner_facebook}
-                            twitter={data.owner_twitter}
-                            telegram={data.owner_telegram}
-                            whatsapp={data.owner_whatsapp}
-                            website={data.owner_website}
-                          />
-                        </div>
-                      )}
                     </div>
                   )}
 
