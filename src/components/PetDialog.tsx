@@ -34,6 +34,7 @@ import type { OptimizedImage } from "@/components/ImagePickerOptimize";
 
 import { useAuth } from "@/auth/AuthProvider";
 import { createPet, updatePet, uploadPetPhoto } from "@/lib/pets";
+import { supabase } from "@/lib/supabase";
 import { THEME_PRESETS } from "@/lib/themes";
 import { usePetTheme } from "@/hooks/usePetTheme";
 import { cn } from "@/lib/utils";
@@ -161,11 +162,16 @@ export function PetDialog({ mode, open, onOpenChange, initialPet, onSubmit }: Pr
       if (mode === "add") {
         row = await createPet({ ...basePayload });
 
-        try {
-          const qrUrl = await generateAndStorePetQr(user.id, row.short_id);
-          await updatePet(row.id, { qr_url: qrUrl });
-        } catch (e) {
-          console.warn("QR generation failed (non-blocking):", (e as any)?.message);
+        if (row.qr_code?.short_id && !row.qr_code?.qr_url) {
+          try {
+            const qrUrl = await generateAndStorePetQr(user.id, row.qr_code.short_id);
+            await supabase
+              .from("qr_codes")
+              .update({ qr_url: qrUrl })
+              .eq("id", row.qr_code.id);
+          } catch (e) {
+            console.warn("QR generation failed (non-blocking):", (e as any)?.message);
+          }
         }
 
         let uploadBlob = optimizedBlobRef.current;

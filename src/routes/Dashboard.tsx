@@ -53,7 +53,7 @@ export default function Dashboard() {
 
   const viewPetPage = (pet: PetRow) => {
     const baseUrl = window.location.origin;
-    const petUrl = `${baseUrl}/p/${pet.short_id}`;
+    const petUrl = `${baseUrl}/p/${pet.qr_code?.short_id}`;
     window.open(petUrl, "_blank");
   };
 
@@ -257,13 +257,13 @@ export default function Dashboard() {
 
                           <Button
                             size="sm"
-                            variant={p.qr_url ? "outline" : "secondary"}
+                            variant={p.qr_code?.qr_url ? "outline" : "secondary"}
                             onClick={() => setQrTarget(p)}
                             className="gap-1.5 flex-1 transition-all hover:scale-105"
-                            title={p.qr_url ? "View QR" : "Generate QR"}
+                            title={p.qr_code?.qr_url ? "View QR" : "Generate QR"}
                           >
                             <QrCode className="h-3.5 w-3.5" />
-                            {p.qr_url ? "QR" : "Create"}
+                            {p.qr_code?.qr_url ? "QR" : "Create"}
                           </Button>
                         </div>
 
