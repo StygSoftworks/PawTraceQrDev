@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { QrCode, Copy, Download, RefreshCw } from "lucide-react";
-import { generateAndStorePetQr } from "@/lib/qr";
+import { generateAndStorePetQr, makeQrSvgString } from "@/lib/qr";
 import { updatePet } from "@/lib/pets";
 import type { PetRow } from "@/lib/pets";
 
@@ -74,6 +74,23 @@ export function QRCodeDialog({ pet, open, onOpenChange, ownerId }: QRCodeDialogP
     a.click();
   };
 
+  const downloadQRSvg = async () => {
+    if (!pet) return;
+    try {
+      const qrTarget = `https://www.pawtraceqr.com/p/${pet.short_id}`;
+      const svgString = await makeQrSvgString(qrTarget);
+      const blob = new Blob([svgString], { type: "image/svg+xml" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${pet.name}-qr.svg`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      alert("Failed to generate SVG");
+    }
+  };
+
   const currentQrUrl = qrUrl || pet?.qr_url;
 
   return (
@@ -130,14 +147,25 @@ export function QRCodeDialog({ pet, open, onOpenChange, ownerId }: QRCodeDialogP
                     <Copy className="h-4 w-4" />
                   </Button>
                 </div>
-                <Button
-                  type="button"
-                  onClick={() => downloadQR(currentQrUrl)}
-                  className="w-full gap-2 bg-[#3B3A7A] hover:bg-[#3B3A7A]/90 text-white"
-                >
-                  <Download className="h-4 w-4" />
-                  Download QR Code
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    onClick={() => downloadQR(currentQrUrl)}
+                    className="flex-1 gap-2 bg-[#3B3A7A] hover:bg-[#3B3A7A]/90 text-white"
+                  >
+                    <Download className="h-4 w-4" />
+                    Download PNG
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={downloadQRSvg}
+                    variant="outline"
+                    className="flex-1 gap-2 border-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    Download SVG
+                  </Button>
+                </div>
               </div>
             </>
           ) : (

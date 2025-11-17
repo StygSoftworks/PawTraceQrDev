@@ -13,6 +13,16 @@ export async function makeQrDataUrl(text: string) {
   });
 }
 
+export async function makeQrSvgString(text: string): Promise<string> {
+  const QRCode = (await import("qrcode")).default; // lazy-load
+  return await QRCode.toString(text, {
+    type: "svg",
+    errorCorrectionLevel: "M",
+    margin: 1,
+    color: { dark: "#000000", light: "#ffffff" },
+  });
+}
+
 
 
 // Convert a data URL to a Blob object
