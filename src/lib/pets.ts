@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { generateAndStorePetQr } from "@/lib/qr";
+import { makeAdaptiveShortId } from "./ids";
 
 
 /** Shape you’ll send from the form */
@@ -16,16 +17,6 @@ export type PetInsert = {
   notes?: string | null;
   vaccinations?: { rabies?: boolean; rabiesExpires?: string } | null;
   photo_url?: string | null;
-};
-
-export type QRCode = {
-  id: string;
-  short_id: string;
-  qr_url: string | null;
-  pet_id: string | null;
-  assigned_at: string | null;
-  created_at: string;
-  updated_at: string;
 };
 
 export type PetRow = {
@@ -46,8 +37,8 @@ export type PetRow = {
   updated_at: string;
   missing: boolean;
   missing_since: string | null;
-  qr_code_id: string | null;
-  qr_code?: QRCode;
+  qr_url: string | null;
+  short_id: string;
 };
 
 export type PetUpdate = Partial<PetInsert> & { id: string };
@@ -65,41 +56,25 @@ export async function createPet(data: PetInsert) {
 
 
 export async function createPet(payload: PetInsert) {
-  const { data: pet, error: insertError } = await supabase
-    .from("pets")
-    .insert(payload)
-    .select("*")
-    .single();
-
-  if (insertError) throw insertError;
-
-  const { data: qrData, error: qrError } = await supabase
-    .rpc("claim_qr_code_for_pet", { p_pet_id: pet.id });
-
-  if (qrError) {
-    await supabase.from("pets").delete().eq("id", pet.id);
-    throw new Error("No available QR codes in pool. Please contact support.");
-  }
-
-  const claimedQr = qrData?.[0];
-  if (claimedQr) {
-    await supabase
+  let length = 3;
+  for (let attempt = 0; attempt < 7; attempt++) {
+    const short_id = makeAdaptiveShortId(length);
+    const { data, error } = await supabase
       .from("pets")
-      .update({ qr_code_id: claimedQr.qr_id })
-      .eq("id", pet.id);
+      .insert({ ...payload, short_id })
+      .select("*")
+      .single();
+
+    if (!error) return data;
+
+    // unique violation → increase length + retry
+    if (error.code === "23505" && error.message.includes("pets_short_id_key")) {
+      length++;
+      continue;
+    }
+    throw error;
   }
-
-  const { data: fullPet, error: selectError } = await supabase
-    .from("pets")
-    .select(`
-      *,
-      qr_code:qr_codes(qr_code_id)
-    `)
-    .eq("id", pet.id)
-    .single();
-
-  if (selectError) throw selectError;
-  return fullPet;
+  throw new Error("Could not generate a unique short id for pet.");
 }
 
 export async function updatePet(id: string, patch: Record<string, any>) {
@@ -132,10 +107,7 @@ export async function updatePet(id: string, patch: Record<string, any>) {
 export async function listPetsByOwner(ownerId: string) {
   const { data, error } = await supabase
     .from("pets")
-    .select(`
-      *,
-      qr_code:qr_codes(qr_code_id)
-    `)
+    .select("*")
     .eq("owner_id", ownerId)
     .order("created_at", { ascending: false });
   if (error) throw error;
@@ -206,41 +178,18 @@ export async function deletePetPhotoByUrl(photoUrl?: string | null) {
 export async function ensureQrForAll(ownerId: string) {
   const { data, error } = await supabase
     .from("pets")
-    .select(`
-      id,
-      qr_code_id,
-      qr_code:qr_codes(qr_code_id)
-    `)
+    .select("id, qr_url")
     .eq("owner_id", ownerId);
   if (error) throw error;
 
   for (const p of data ?? []) {
-    if (!p.qr_code_id) {
-      const { data: qrData, error: qrError } = await supabase
-        .rpc("claim_qr_code_for_pet", { p_pet_id: p.id });
-
-      if (qrError) {
-        console.error(`Failed to claim QR code for pet ${p.id}:`, qrError);
-        continue;
-      }
-
-      const claimedQr = qrData?.[0];
-      if (claimedQr) {
-        await supabase
-          .from("pets")
-          .update({ qr_code_id: claimedQr.qr_id })
-          .eq("id", p.id);
-      }
-    } else if (p.qr_code && typeof p.qr_code === 'object' && !Array.isArray(p.qr_code)) {
-      const qrCode = p.qr_code as QRCode;
-      if (!qrCode.qr_url && qrCode.short_id) {
-        const qrUrl = await generateAndStorePetQr(ownerId, qrCode.short_id);
-        const { error: updErr } = await supabase
-          .from("qr_codes")
-          .update({ qr_url: qrUrl })
-          .eq("id", qrCode.id);
-        if (updErr) throw updErr;
-      }
+    if (!p.qr_url) {
+      const qrUrl = await generateAndStorePetQr(ownerId, p.id);
+      const { error: updErr } = await supabase
+        .from("pets")
+        .update({ qr_url: qrUrl })
+        .eq("id", p.id);
+      if (updErr) throw updErr;
     }
   }
 }
