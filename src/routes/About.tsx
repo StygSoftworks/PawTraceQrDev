@@ -25,7 +25,7 @@ export default function About() {
             <CardContent className="p-8 md:p-12 space-y-6">
               <div className="flex justify-center mb-6">
                 <img
-                  src="/theoandbutterball.webp"
+                  src="https://images.pexels.com/photos/1543793/pexels-photo-1543793.jpeg?auto=compress&cs=tinysrgb&w=800"
                   alt="Theo and Butterball"
                   className="rounded-lg shadow-md max-w-full h-auto"
                 />
