@@ -3,7 +3,7 @@ import * as React from "react";
 
 type HeroImageProps = {
   /** Root of your generated images */
-  root?: string;                      // default: "images/hero" (no leading slash)
+  root?: string;                      // default: "/images/hero"
   /** Base filename (e.g., "cat" -> cat-480.avif, cat-768.webp, cat-1440.jpg) */
   base: string;
   /** Width breakpoints you generated */
@@ -38,7 +38,7 @@ function buildSrcSet(root: string, base: string, fmt: "avif" | "webp" | "jpg", w
 }
 
 export function HeroImage({
-  root = "images/hero",  // ← Removed leading slash
+  root = "/images/hero",
   base,
   widths = [480, 768, 1024, 1440, 1920],
   sizes = "(max-width: 768px) 100vw, 70vw",
