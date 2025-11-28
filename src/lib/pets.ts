@@ -1,6 +1,5 @@
 import { supabase } from "@/lib/supabase";
 import { generateAndStorePetQr } from "@/lib/qr";
-import { makeAdaptiveShortId } from "./ids";
 
 
 /** Shape you’ll send from the form */
@@ -56,25 +55,43 @@ export async function createPet(data: PetInsert) {
 
 
 export async function createPet(payload: PetInsert) {
-  let length = 3;
-  for (let attempt = 0; attempt < 7; attempt++) {
-    const short_id = makeAdaptiveShortId(length);
-    const { data, error } = await supabase
+  // 1) Reserve a QR code from the pool
+  const { data: qrData, error: qrError } = await supabase
+    .rpc("reserve_qr_code");
+
+  if (qrError || !qrData || qrData.length === 0) {
+    throw new Error("No available QR codes in pool. Please contact support.");
+  }
+
+  const reservedQr = qrData[0];
+
+  try {
+    // 2) Create the pet with the reserved QR code
+    const { data: pet, error: petError } = await supabase
       .from("pets")
-      .insert({ ...payload, short_id })
+      .insert({ ...payload, qr_code_id: reservedQr.qr_id })
       .select("*")
       .single();
 
-    if (!error) return data;
+    if (petError) throw petError;
 
-    // unique violation → increase length + retry
-    if (error.code === "23505" && error.message.includes("pets_short_id_key")) {
-      length++;
-      continue;
+    // 3) Finalize the QR code assignment with the pet_id
+    const { error: finalizeError } = await supabase
+      .rpc("finalize_qr_assignment", {
+        p_qr_id: reservedQr.qr_id,
+        p_pet_id: pet.id
+      });
+
+    if (finalizeError) {
+      console.error("Failed to finalize QR assignment:", finalizeError);
     }
+
+    return pet;
+  } catch (error) {
+    // Release the QR code back to pool if pet creation fails
+    await supabase.rpc("release_qr_code", { p_qr_id: reservedQr.qr_id });
     throw error;
   }
-  throw new Error("Could not generate a unique short id for pet.");
 }
 
 export async function updatePet(id: string, patch: Record<string, any>) {
