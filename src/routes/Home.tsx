@@ -2,45 +2,42 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, } from "lucide-react";
+import { HeroImage } from "@/components/HeroImage";
 import { Bullet, BulletList } from "@/components/Bullet";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       {/* HERO */}
-      <section className="relative h-[520px] w-full overflow-hidden">
-        <img
-          src="https://images.pexels.com/photos/45201/kitty-cat-kitten-pet-45201.jpeg?auto=compress&cs=tinysrgb&w=1920"
-          alt="Close-up of a cat representing a pet profile"
-          className="h-[520px] w-full object-cover"
-          loading="eager"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/30 to-transparent" />
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-[min(640px,90vw)]">
-            <div className="h-full bg-black/45 backdrop-blur-[1px]">
-              <div className="px-8 sm:px-12 pt-14 pb-10 space-y-6 max-w-xl">
-                <div className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-widest text-white/80">
-                  <span className="opacity-90">EASY TO SCAN.</span>
-                  <span className="opacity-60">EASY TO SHARE.</span>
-                </div>
-                <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight uppercase">
-                  Smart Shareable<br /> Pet IDs!
-                </h1>
-                <p className="text-lg/7 text-white/90">
-                  Create a pet profile, we make a QR code and a public page showing
-                  basic contact info and if your pet is missing. Easy to scan, easy to share.
-                </p>
-                <Button asChild size="lg" className="bg-[var(--brand-coral)] hover:opacity-90">
-                  <Link to="/register">
-                    Get Started <ChevronRight className="ml-1.5 h-5 w-5" />
-                  </Link>
-                </Button>
+      <HeroImage
+        base="hero"
+        alt="Close-up of a cat representing a pet profile"
+        sizes="(max-width: 768px) 100vw, 70vw"
+        imgClassName="h-[520px] w-full object-cover"
+        gradientOverlayClassName="from-black/50 via-black/30 to-transparent"
+        panel={
+          <div className="h-full bg-black/45 backdrop-blur-[1px]">
+            <div className="px-8 sm:px-12 pt-14 pb-10 space-y-6 max-w-xl">
+              <div className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-widest text-white/80">
+                <span className="opacity-90">EASY TO SCAN.</span>
+                <span className="opacity-60">EASY TO SHARE.</span>
               </div>
+              <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight uppercase">
+                Smart Shareable<br /> Pet IDs!
+              </h1>
+              <p className="text-lg/7 text-white/90">
+                Create a pet profile, we make a QR code and a public page showing
+                basic contact info and if your pet is missing. Easy to scan, easy to share.
+              </p>
+              <Button asChild size="lg" className="bg-[var(--brand-coral)] hover:opacity-90">
+                <Link to="/register">
+                  Get Started <ChevronRight className="ml-1.5 h-5 w-5" />
+                </Link>
+              </Button>
             </div>
           </div>
-        </div>
-      </section>
+        }
+      />
 
       {/* HOW IT WORKS */}
       <section className="border-t border-slate-200 bg-white">
