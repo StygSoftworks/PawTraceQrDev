@@ -9,6 +9,7 @@ import { useTheme } from "@/hooks/useTheme";
 import Logo from "@/components/Logo";
 import { HeaderAuth } from "@/components/HeaderAuth";
 import type * as React from "react";
+import { useState } from "react";
 
 const getAuthenticatedNavItems = (userRole?: string) => {
   const items = [
@@ -58,25 +59,35 @@ const NavItem = ({ to, children }: { to: string; children: React.ReactNode }) =>
 const MobileNavItem = ({
   to,
   children,
-  icon: Icon
+  icon: Icon,
+  onClick,
+  index = 0
 }: {
   to: string;
   children: React.ReactNode;
   icon: React.ElementType;
+  onClick?: () => void;
+  index?: number;
 }) => {
   const { pathname } = useLocation();
   const active = pathname === to || (to !== "/" && pathname.startsWith(to + "/"));
   return (
     <NavLink
       to={to}
+      onClick={onClick}
       aria-current={active ? "page" : undefined}
-      className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors
+      className={`flex items-center gap-4 rounded-lg px-4 py-3.5 text-base font-medium transition-all duration-200
+        animate-in slide-in-from-left fade-in
         ${active
-          ? "bg-primary text-primary-foreground"
-          : "text-foreground hover:bg-primary/10"
+          ? "bg-primary text-primary-foreground shadow-md"
+          : "text-foreground hover:bg-primary/10 hover:translate-x-1"
         }`}
+      style={{
+        animationDelay: `${index * 50}ms`,
+        animationDuration: '400ms'
+      }}
     >
-      <Icon className="h-4 w-4" />
+      <Icon className="h-5 w-5" />
       {children}
     </NavLink>
   );
@@ -86,8 +97,13 @@ export default function Header() {
   const { user, loading } = useAuth();
   const { data: profile } = useProfile();
   const { darkMode, toggleDarkMode } = useTheme();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = user ? getAuthenticatedNavItems(profile?.role) : getPublicNavItems();
+
+  const handleMobileNavClick = () => {
+    setMobileMenuOpen(false);
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b shadow-lg backdrop-blur-sm">
@@ -97,44 +113,64 @@ export default function Header() {
         <div className="flex h-16 items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-2">
             {/* Mobile sidebar */}
-            <Sheet>
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="md:hidden hover:bg-white/10 text-white"
+                  className="md:hidden hover:bg-white/10 text-white transition-transform active:scale-95"
                 >
-                  <Menu className="h-5 w-5" />
+                  <Menu className="h-5 w-5 transition-transform" />
                   <span className="sr-only">Toggle menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-72 p-0">
-                <div className="border-b px-4 py-4">
-                  <Logo showText={true} size="sm" to="/" />
-                </div>
-                <nav className="grid gap-1 p-3">
-                  {!loading && navItems.map((item) => (
-                    <MobileNavItem
-                      key={item.to}
-                      to={item.to}
-                      icon={item.icon}
-                    >
-                      {item.label}
-                    </MobileNavItem>
-                  ))}
+              <SheetContent side="left" fullScreen className="p-0">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
+                <div className="relative flex flex-col h-full">
+                  <div className="border-b px-6 py-5 bg-gradient-to-r from-primary/10 to-accent/10" onClick={handleMobileNavClick}>
+                    <Logo showText={true} size="sm" to="/" />
+                  </div>
+                  <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-2">
+                    {!loading && navItems.map((item, index) => (
+                      <MobileNavItem
+                        key={item.to}
+                        to={item.to}
+                        icon={item.icon}
+                        onClick={handleMobileNavClick}
+                        index={index}
+                      >
+                        {item.label}
+                      </MobileNavItem>
+                    ))}
 
-                  {!loading && !user && (
-                    <>
-                      <Separator className="my-2" />
-                      <MobileNavItem to="/signin" icon={LogIn}>
-                        Sign in
-                      </MobileNavItem>
-                      <MobileNavItem to="/register" icon={UserPlus}>
-                        Sign up
-                      </MobileNavItem>
-                    </>
-                  )}
-                </nav>
+                    {!loading && !user && (
+                      <>
+                        <Separator className="my-4" />
+                        <MobileNavItem
+                          to="/signin"
+                          icon={LogIn}
+                          onClick={handleMobileNavClick}
+                          index={navItems.length}
+                        >
+                          Sign in
+                        </MobileNavItem>
+                        <MobileNavItem
+                          to="/register"
+                          icon={UserPlus}
+                          onClick={handleMobileNavClick}
+                          index={navItems.length + 1}
+                        >
+                          Sign up
+                        </MobileNavItem>
+                      </>
+                    )}
+                  </nav>
+                  <div className="border-t px-6 py-4 bg-muted/30">
+                    <p className="text-xs text-muted-foreground text-center">
+                      © {new Date().getFullYear()} PawTrace
+                    </p>
+                  </div>
+                </div>
               </SheetContent>
             </Sheet>
 
