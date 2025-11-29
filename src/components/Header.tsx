@@ -125,9 +125,9 @@ export default function Header() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" fullScreen className="p-0">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
+                <div className="absolute inset-0 bg-gradient-to-r from-primary-header via-primary-dark to-accent-header" />
                 <div className="relative flex flex-col h-full">
-                  <div className="border-b px-6 py-5 bg-gradient-to-r from-primary/10 to-accent/10" onClick={handleMobileNavClick}>
+                  <div className="border-b px-6 py-5 bg-black/20 backdrop-blur-sm" onClick={handleMobileNavClick}>
                     <Logo showText={true} size="sm" to="/" />
                   </div>
                   <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-2">
@@ -165,8 +165,8 @@ export default function Header() {
                       </>
                     )}
                   </nav>
-                  <div className="border-t px-6 py-4 bg-muted/30">
-                    <p className="text-xs text-muted-foreground text-center">
+                  <div className="border-t px-6 py-4 bg-black/20 backdrop-blur-sm">
+                    <p className="text-xs text-white/70 text-center">
                       © {new Date().getFullYear()} PawTrace
                     </p>
                   </div>
