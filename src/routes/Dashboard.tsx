@@ -19,10 +19,9 @@ import { RecentActivityTable } from "@/components/RecentActivityTable";
 import { QRCodeDialog } from "@/components/QRCodeDialog";
 import { DeletePetDialog } from "@/components/DeletePetDialog";
 import { LocationSharesCard } from "@/components/LocationSharesCard";
-import { useQROperations } from "@/hooks/useQROperations";
 
-import { 
-  PawPrint, Plus, QrCode, Edit, Trash2, Eye, 
+import {
+  PawPrint, Plus, QrCode, Edit, Trash2, Eye,
   AlertTriangle, Activity, RefreshCw, AlertCircle, Sparkles
 } from "lucide-react";
 
@@ -34,8 +33,6 @@ export default function Dashboard() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const ownerId = user?.id ?? null;
-
-  const { backfillAllQR, isBackfilling } = useQROperations(ownerId);
 
   const { data: pets, isLoading, isError } = useQuery({
     queryKey: ["pets", ownerId],
@@ -153,25 +150,14 @@ export default function Dashboard() {
                     Manage profiles, photos, QR tags, and missing status
                   </CardDescription>
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Button 
-                    variant="outline" 
-                    onClick={backfillAllQR} 
-                    disabled={!ownerId || isBackfilling}
-                    className="gap-2 transition-all hover:scale-105"
-                  >
-                    <RefreshCw className={`h-4 w-4 ${isBackfilling ? 'animate-spin' : ''}`} />
-                    {isBackfilling ? "Working…" : "Backfill QR"}
-                  </Button>
-                  <Button 
-                    onClick={() => setAddOpen(true)} 
-                    disabled={!ownerId}
-                    className="gap-2 transition-all hover:scale-105"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Add Pet
-                  </Button>
-                </div>
+                <Button
+                  onClick={() => setAddOpen(true)}
+                  disabled={!ownerId}
+                  className="gap-2 transition-all hover:scale-105"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Pet
+                </Button>
               </div>
             </CardHeader>
 
