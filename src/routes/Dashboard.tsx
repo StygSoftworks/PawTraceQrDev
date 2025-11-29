@@ -257,13 +257,13 @@ export default function Dashboard() {
 
                           <Button
                             size="sm"
-                            variant={p.qr_url ? "outline" : "secondary"}
+                            variant="outline"
                             onClick={() => setQrTarget(p)}
                             className="gap-1.5 flex-1 transition-all hover:scale-105"
-                            title={p.qr_url ? "View QR" : "Generate QR"}
+                            title="View QR Code"
                           >
                             <QrCode className="h-3.5 w-3.5" />
-                            {p.qr_url ? "QR" : "Create"}
+                            QR
                           </Button>
                         </div>
 
