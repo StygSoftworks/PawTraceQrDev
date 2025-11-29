@@ -1,6 +1,5 @@
 // src/components/QRCodeDialog.tsx
-import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -13,9 +12,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { QrCode, Copy, Download, RefreshCw } from "lucide-react";
-import { generateAndStorePetQr, makeQrSvgString } from "@/lib/qr";
-import { updatePet } from "@/lib/pets";
+import { makeQrSvgString } from "@/lib/qr";
 import type { PetRow } from "@/lib/pets";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface QRCodeDialogProps {
   pet: PetRow | null;
@@ -24,35 +29,38 @@ interface QRCodeDialogProps {
   ownerId: string;
 }
 
-export function QRCodeDialog({ pet, open, onOpenChange, ownerId }: QRCodeDialogProps) {
-  const qc = useQueryClient();
+const PNG_SIZES = [
+  { label: "Small (256px)", value: "256" },
+  { label: "Medium (512px)", value: "512" },
+  { label: "Large (1024px)", value: "1024" },
+  { label: "Extra Large (2048px)", value: "2048" },
+];
+
+export function QRCodeDialog({ pet, open, onOpenChange }: QRCodeDialogProps) {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [qrUrl, setQrUrl] = useState<string | null>(pet?.qr_url ?? null);
+  const [svgPreview, setSvgPreview] = useState<string | null>(null);
+  const [selectedSize, setSelectedSize] = useState("512");
 
-  // Generate QR if missing
-  const handleGenerate = async () => {
-    if (!pet || qrUrl) return;
-    
-    setIsGenerating(true);
-    try {
-      const newQrUrl = await generateAndStorePetQr(ownerId, pet.short_id);
-      await updatePet(pet.id, { qr_url: newQrUrl });
-      setQrUrl(newQrUrl);
-      await qc.invalidateQueries({ queryKey: ["pets", ownerId] });
-    } catch (e: any) {
-      alert(e?.message ?? "Failed to generate QR code");
-    } finally {
-      setIsGenerating(false);
-    }
-  };
+  useEffect(() => {
+    if (open && pet?.short_id) {
+      setIsGenerating(true);
+      const qrTarget = `https://www.pawtraceqr.com/p/${pet.short_id}`;
 
-  // Auto-generate on open if missing
-  const handleOpenChange = (newOpen: boolean) => {
-    if (newOpen && pet && !pet.qr_url && !qrUrl) {
-      handleGenerate();
+      makeQrSvgString(qrTarget)
+        .then((svgStr) => {
+          const svgDataUrl = `data:image/svg+xml;base64,${btoa(svgStr)}`;
+          setSvgPreview(svgDataUrl);
+        })
+        .catch(() => {
+          setSvgPreview(null);
+        })
+        .finally(() => setIsGenerating(false));
+    } else {
+      setSvgPreview(null);
     }
-    onOpenChange(newOpen);
-  };
+  }, [open, pet?.short_id]);
+
+  const publicPageUrl = pet?.short_id ? `https://www.pawtraceqr.com/p/${pet.short_id}` : null;
 
   const copyToClipboard = async (text?: string | null) => {
     if (!text) return;
@@ -64,18 +72,28 @@ export function QRCodeDialog({ pet, open, onOpenChange, ownerId }: QRCodeDialogP
     }
   };
 
-  const downloadQR = (url?: string | null) => {
-    if (!url || !pet) return;
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${pet.name}-qr.png`;
-    a.target = "_blank";
-    a.rel = "noopener noreferrer";
-    a.click();
+  const downloadQRPng = async (size: string) => {
+    if (!pet?.short_id) return;
+    try {
+      const qrTarget = `https://www.pawtraceqr.com/p/${pet.short_id}`;
+      const QRCode = (await import("qrcode")).default;
+      const dataUrl = await QRCode.toDataURL(qrTarget, {
+        errorCorrectionLevel: "M",
+        margin: 1,
+        width: parseInt(size),
+        color: { dark: "#000000", light: "#ffffff" },
+      });
+      const a = document.createElement("a");
+      a.href = dataUrl;
+      a.download = `${pet.name}-qr-${size}px.png`;
+      a.click();
+    } catch (e) {
+      alert("Failed to generate PNG");
+    }
   };
 
   const downloadQRSvg = async () => {
-    if (!pet) return;
+    if (!pet?.short_id) return;
     try {
       const qrTarget = `https://www.pawtraceqr.com/p/${pet.short_id}`;
       const svgString = await makeQrSvgString(qrTarget);
@@ -91,10 +109,8 @@ export function QRCodeDialog({ pet, open, onOpenChange, ownerId }: QRCodeDialogP
     }
   };
 
-  const currentQrUrl = qrUrl || pet?.qr_url;
-
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md bg-white dark:bg-[#1E1F24] border-2">
         <DialogHeader className="space-y-3">
           <div className="flex items-center gap-3">
@@ -118,53 +134,73 @@ export function QRCodeDialog({ pet, open, onOpenChange, ownerId }: QRCodeDialogP
               <RefreshCw className="h-4 w-4 animate-spin" />
               Generating QR code…
             </div>
-          ) : currentQrUrl ? (
+          ) : svgPreview ? (
             <>
               <div className="p-8 bg-white rounded-md border-4 border-[#3B3A7A] shadow-lg">
                 <img
-                  src={currentQrUrl}
+                  src={svgPreview}
                   alt="QR code"
                   className="h-64 w-64 object-contain"
                   style={{ backgroundColor: '#ffffff' }}
                 />
               </div>
-              <div className="w-full space-y-2">
-                <Label className="text-sm font-semibold text-foreground">QR Code URL</Label>
-                <div className="flex gap-2">
-                  <Input 
-                    readOnly 
-                    value={currentQrUrl} 
-                    className="text-xs bg-background text-foreground border-2" 
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => copyToClipboard(currentQrUrl)}
-                    className="flex-shrink-0"
-                    title="Copy URL"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
+              <div className="w-full space-y-3">
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-foreground">Public Page URL</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      readOnly
+                      value={publicPageUrl ?? ""}
+                      className="text-xs bg-background text-foreground border-2"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => copyToClipboard(publicPageUrl)}
+                      className="flex-shrink-0"
+                      title="Copy URL"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    onClick={() => downloadQR(currentQrUrl)}
-                    className="flex-1 gap-2 bg-[#3B3A7A] hover:bg-[#3B3A7A]/90 text-white"
-                  >
-                    <Download className="h-4 w-4" />
-                    Download PNG
-                  </Button>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-foreground">Download Options</Label>
+
                   <Button
                     type="button"
                     onClick={downloadQRSvg}
                     variant="outline"
-                    className="flex-1 gap-2 border-2"
+                    className="w-full gap-2 border-2"
                   >
                     <Download className="h-4 w-4" />
-                    Download SVG
+                    Download SVG (Vector)
                   </Button>
+
+                  <div className="flex gap-2">
+                    <Select value={selectedSize} onValueChange={setSelectedSize}>
+                      <SelectTrigger className="flex-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PNG_SIZES.map((size) => (
+                          <SelectItem key={size.value} value={size.value}>
+                            {size.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      type="button"
+                      onClick={() => downloadQRPng(selectedSize)}
+                      className="gap-2 bg-[#3B3A7A] hover:bg-[#3B3A7A]/90 text-white"
+                    >
+                      <Download className="h-4 w-4" />
+                      Download PNG
+                    </Button>
+                  </div>
                 </div>
               </div>
             </>
@@ -176,9 +212,9 @@ export function QRCodeDialog({ pet, open, onOpenChange, ownerId }: QRCodeDialogP
         </div>
 
         <DialogFooter>
-          <Button 
-            type="button" 
-            variant="outline" 
+          <Button
+            type="button"
+            variant="outline"
             onClick={() => onOpenChange(false)}
             className="border-2"
           >
