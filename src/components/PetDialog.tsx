@@ -46,8 +46,12 @@ const PetSchema = z.object({
   breed: z.string().optional(),
   color: z.string().optional(),
   weight: z
-    .number()
-    .min(0, "Weight must be positive")
+    .union([
+      z.number().min(0, "Weight must be positive"),
+      z.nan(),
+      z.null(),
+    ])
+    .transform((val) => (typeof val === "number" && !isNaN(val) ? val : undefined))
     .optional(),
   birthdate: z.string().optional(),
   microchipId: z.string().optional(),
