@@ -7,7 +7,7 @@ import { Bullet, BulletList } from "@/components/Bullet";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       {/* HERO */}
       <HeroImage
         base="hero"
@@ -40,10 +40,10 @@ export default function Home() {
       />
 
       {/* HOW IT WORKS */}
-      <section className="border-t border-slate-200 bg-white">
+      <section className="border-t border-slate-200 bg-background">
         <div className="container mx-auto grid grid-cols-1 gap-8 px-4 sm:px-6 py-14 md:grid-cols-2">
           <div className="max-w-md">
-            <h3 className="text-2xl font-bold uppercase tracking-wider">
+            <h3 className="text-2xl font-bold uppercase tracking-wider text-foreground">
               How PawTraceQR Works
             </h3>
             <p className="mt-3 text-muted-foreground">
@@ -68,10 +68,10 @@ export default function Home() {
       </section>
 
       {/* WHAT YOU CAN DO RIGHT NOW */}
-      <section className="border-t border-slate-200 bg-white">
+      <section className="border-t border-slate-200 bg-background">
         <div className="container mx-auto grid grid-cols-1 gap-8 px-4 sm:px-6 py-14 md:grid-cols-2">
           <div className="max-w-md">
-            <h3 className="text-2xl font-bold uppercase tracking-wider">
+            <h3 className="text-2xl font-bold uppercase tracking-wider text-foreground">
               What you can do right now
             </h3>
             <p className="mt-3 text-muted-foreground">
