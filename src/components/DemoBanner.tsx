@@ -9,8 +9,8 @@ export function DemoBanner() {
   if (!isVisible) return null;
 
   return (
-    <Alert className="rounded-none border-x-0 border-t-0 bg-[#FFD65A] border-[#FFD65A] text-[#1E1F24]">
-      <AlertTriangle className="h-4 w-4 text-[#1E1F24]" />
+    <Alert className="rounded-none border-x-0 border-t-0 bg-warning text-warning-foreground border-warning">
+      <AlertTriangle className="h-4 w-4" />
       <AlertDescription className="flex items-center justify-between gap-4">
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
           <span className="font-semibold text-sm">Demo Site:</span>
@@ -22,7 +22,7 @@ export function DemoBanner() {
           variant="ghost"
           size="icon"
           onClick={() => setIsVisible(false)}
-          className="h-6 w-6 shrink-0 hover:bg-[#1E1F24]/10 text-[#1E1F24]"
+          className="h-6 w-6 shrink-0 hover:bg-foreground/10"
           aria-label="Dismiss demo banner"
         >
           <X className="h-4 w-4" />

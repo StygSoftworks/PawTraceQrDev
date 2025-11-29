@@ -29,7 +29,7 @@ export default function Home() {
                 Create a pet profile, we make a QR code and a public page showing
                 basic contact info and if your pet is missing. Easy to scan, easy to share.
               </p>
-              <Button asChild size="lg" className="bg-[var(--brand-coral)] hover:opacity-90">
+              <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
                 <Link to="/register">
                   Get Started <ChevronRight className="ml-1.5 h-5 w-5" />
                 </Link>

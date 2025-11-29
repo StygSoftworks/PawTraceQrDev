@@ -111,10 +111,10 @@ export function QRCodeDialog({ pet, open, onOpenChange }: QRCodeDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md bg-white dark:bg-[#1E1F24] border-2">
+      <DialogContent className="sm:max-w-md border-2">
         <DialogHeader className="space-y-3">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 bg-[#3B3A7A] rounded-xl flex items-center justify-center shadow-md">
+            <div className="h-10 w-10 bg-primary rounded-xl flex items-center justify-center shadow-md">
               <QrCode className="h-5 w-5 text-white" />
             </div>
             <div>
@@ -136,7 +136,7 @@ export function QRCodeDialog({ pet, open, onOpenChange }: QRCodeDialogProps) {
             </div>
           ) : svgPreview ? (
             <>
-              <div className="p-8 bg-white rounded-md border-4 border-[#3B3A7A] shadow-lg">
+              <div className="p-8 bg-white dark:bg-white rounded-md border-4 border-primary shadow-lg">
                 <img
                   src={svgPreview}
                   alt="QR code"
@@ -195,7 +195,7 @@ export function QRCodeDialog({ pet, open, onOpenChange }: QRCodeDialogProps) {
                     <Button
                       type="button"
                       onClick={() => downloadQRPng(selectedSize)}
-                      className="gap-2 bg-[#3B3A7A] hover:bg-[#3B3A7A]/90 text-white"
+                      className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
                     >
                       <Download className="h-4 w-4" />
                       Download PNG

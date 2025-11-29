@@ -394,7 +394,7 @@ export default function PublicPet() {
                         <img
                           src={data.photo_url}
                           alt={`${data.name}`}
-                          className="w-full h-auto max-h-[600px] object-contain bg-white"
+                          className="w-full h-auto max-h-[600px] object-contain bg-white dark:bg-slate-100"
                         />
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
                           <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity bg-black/70 px-4 py-2 rounded-lg text-sm">
@@ -407,7 +407,7 @@ export default function PublicPet() {
                       </p>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center justify-center h-96 rounded-xl border-2 border-dashed border-primary/20 bg-slate-50 dark:bg-slate-900">
+                    <div className="flex flex-col items-center justify-center h-96 rounded-xl border-2 border-dashed border-primary/20 bg-muted">
                       <PawPrint className="h-16 w-16 text-primary/30 mb-3" />
                       <p className="text-sm text-muted-foreground">No photo provided</p>
                     </div>
@@ -420,7 +420,7 @@ export default function PublicPet() {
       </main>
 
       <Dialog open={imageModalOpen} onOpenChange={setImageModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-white dark:bg-slate-900">
+        <DialogContent className="max-w-4xl max-h-[90vh] p-0">
           <DialogHeader className="p-6 pb-0">
             <DialogTitle className="flex items-center gap-2">
               <PawPrint className="h-5 w-5" />
