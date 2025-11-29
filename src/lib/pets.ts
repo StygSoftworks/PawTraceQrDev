@@ -66,10 +66,15 @@ export async function createPet(payload: PetInsert) {
   const reservedQr = qrData[0];
 
   try {
-    // 2) Create the pet with the reserved QR code
+    // 2) Create the pet with the reserved QR code and short_id
     const { data: pet, error: petError } = await supabase
       .from("pets")
-      .insert({ ...payload, qr_code_id: reservedQr.qr_id })
+      .insert({
+        ...payload,
+        qr_code_id: reservedQr.qr_id,
+        short_id: reservedQr.qr_short_id,
+        qr_url: reservedQr.qr_qr_url
+      })
       .select("*")
       .single();
 

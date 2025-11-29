@@ -2,7 +2,6 @@ import * as React from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { generateAndStorePetQr } from "@/lib/qr";
 
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
@@ -160,13 +159,6 @@ export function PetDialog({ mode, open, onOpenChange, initialPet, onSubmit }: Pr
 
       if (mode === "add") {
         row = await createPet({ ...basePayload });
-
-        try {
-          const qrUrl = await generateAndStorePetQr(user.id, row.short_id);
-          await updatePet(row.id, { qr_url: qrUrl });
-        } catch (e) {
-          console.warn("QR generation failed (non-blocking):", (e as any)?.message);
-        }
 
         let uploadBlob = optimizedBlobRef.current;
         if (!uploadBlob && values.photoPreview) {
