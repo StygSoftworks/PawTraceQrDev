@@ -18,11 +18,9 @@ export default function Footer({ className = "" }: FooterProps) {
             <Link to="/privacy" className="hover:text-foreground transition-colors">
               Privacy
             </Link>
-            {/* <Link to="/contact" className="hover:text-foreground transition-colors">
+            <Link to="/contact" className="hover:text-foreground transition-colors">
               Contact
-            </Link> */}
-
-            {/* Reviews */}
+            </Link>
             <Link to="/reviews" className="hover:text-foreground transition-colors">
               Reviews
             </Link>
