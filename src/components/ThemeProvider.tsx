@@ -11,6 +11,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [themeId, setThemeId] = useState<string>(DEFAULT_THEME);
   const [darkMode, setDarkMode] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [previewThemeId, setPreviewThemeId] = useState<string | null>(null);
+  const [previewDarkMode, setPreviewDarkMode] = useState<boolean | null>(null);
 
   const isPetPage = location.pathname.startsWith('/p/');
 
@@ -53,19 +55,44 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const root = document.documentElement;
+    const activeDarkMode = previewDarkMode !== null ? previewDarkMode : darkMode;
 
-    if (darkMode) {
+    if (activeDarkMode) {
       root.classList.add('dark');
     } else {
       root.classList.remove('dark');
     }
-  }, [darkMode]);
+  }, [darkMode, previewDarkMode]);
+
+  useEffect(() => {
+    if (!isPetPage && previewThemeId !== null) {
+      const activeDarkMode = previewDarkMode !== null ? previewDarkMode : darkMode;
+      applyTheme(previewThemeId, activeDarkMode);
+    }
+  }, [previewThemeId, previewDarkMode, darkMode, isPetPage]);
+
+  const previewTheme = (newThemeId: string, newDarkMode?: boolean) => {
+    setPreviewThemeId(newThemeId);
+    if (newDarkMode !== undefined) {
+      setPreviewDarkMode(newDarkMode);
+    }
+  };
+
+  const clearPreview = () => {
+    setPreviewThemeId(null);
+    setPreviewDarkMode(null);
+    if (!isPetPage) {
+      applyTheme(themeId, darkMode);
+    }
+  };
 
   const updateTheme = async (newThemeId: string, newDarkMode?: boolean) => {
     const useDarkMode = newDarkMode ?? darkMode;
 
     setThemeId(newThemeId);
     setDarkMode(useDarkMode);
+    setPreviewThemeId(null);
+    setPreviewDarkMode(null);
 
     if (!isPetPage) {
       applyTheme(newThemeId, useDarkMode);
@@ -102,6 +129,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     isLoading,
     updateTheme,
     toggleDarkMode,
+    previewTheme,
+    clearPreview,
   };
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

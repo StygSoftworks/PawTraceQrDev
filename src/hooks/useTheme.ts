@@ -6,6 +6,8 @@ interface ThemeContextValue {
   isLoading: boolean;
   updateTheme: (newThemeId: string, newDarkMode?: boolean) => Promise<void>;
   toggleDarkMode: () => Promise<void>;
+  previewTheme: (newThemeId: string, newDarkMode?: boolean) => void;
+  clearPreview: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
