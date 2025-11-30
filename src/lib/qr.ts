@@ -24,83 +24,101 @@ export async function makeQrSvgString(text: string): Promise<string> {
 }
 
 export async function makeRoundQrSvgString(text: string): Promise<string> {
-  const QRCode = (await import("qrcode")).default;
-  const svgString = await QRCode.toString(text, {
+  const QRCodeStyling = (await import("qr-code-styling")).default;
+
+  const qrCode = new QRCodeStyling({
+    width: 512,
+    height: 512,
+    data: text,
+    shape: "circle",
     type: "svg",
-    errorCorrectionLevel: "H",
-    margin: 2,
-    color: { dark: "#000000", light: "#ffffff" },
+    dotsOptions: {
+      color: "#000000",
+      type: "extra-rounded"
+    },
+    cornersSquareOptions: {
+      color: "#000000",
+      type: "extra-rounded"
+    },
+    cornersDotOptions: {
+      color: "#000000",
+      type: "dot"
+    },
+    backgroundOptions: {
+      color: "#ffffff"
+    },
+    imageOptions: {
+      crossOrigin: "anonymous",
+      margin: 0
+    },
+    qrOptions: {
+      errorCorrectionLevel: "H"
+    }
   });
 
-  const parser = new DOMParser();
-  const svgDoc = parser.parseFromString(svgString, "image/svg+xml");
-  const svgElement = svgDoc.documentElement;
+  const blob = await qrCode.getRawData("svg");
+  if (!blob) throw new Error("Failed to generate SVG");
 
-  const viewBox = svgElement.getAttribute("viewBox");
-  if (!viewBox) return svgString;
-
-  const [, , width, height] = viewBox.split(" ").map(Number);
-  const size = Math.max(width, height);
-  const radius = size / 2;
-
-  const defsElement = svgDoc.createElementNS("http://www.w3.org/2000/svg", "defs");
-  const clipPathElement = svgDoc.createElementNS("http://www.w3.org/2000/svg", "clipPath");
-  clipPathElement.setAttribute("id", "roundClip");
-
-  const circleElement = svgDoc.createElementNS("http://www.w3.org/2000/svg", "circle");
-  circleElement.setAttribute("cx", (size / 2).toString());
-  circleElement.setAttribute("cy", (size / 2).toString());
-  circleElement.setAttribute("r", radius.toString());
-
-  clipPathElement.appendChild(circleElement);
-  defsElement.appendChild(clipPathElement);
-
-  svgElement.insertBefore(defsElement, svgElement.firstChild);
-
-  const gElement = svgDoc.createElementNS("http://www.w3.org/2000/svg", "g");
-  gElement.setAttribute("clip-path", "url(#roundClip)");
-
-  while (svgElement.childNodes.length > 1) {
-    const child = svgElement.childNodes[1];
-    gElement.appendChild(child);
+  if (blob instanceof Blob) {
+    const text_data = await blob.text();
+    return text_data;
+  } else {
+    return blob.toString();
   }
-
-  svgElement.appendChild(gElement);
-
-  return new XMLSerializer().serializeToString(svgDoc);
 }
 
 export async function makeRoundQrDataUrl(text: string, size = 512): Promise<string> {
-  const svgString = await makeRoundQrSvgString(text);
+  const QRCodeStyling = (await import("qr-code-styling")).default;
+
+  const qrCode = new QRCodeStyling({
+    width: size,
+    height: size,
+    data: text,
+    shape: "circle",
+    type: "canvas",
+    dotsOptions: {
+      color: "#000000",
+      type: "extra-rounded"
+    },
+    cornersSquareOptions: {
+      color: "#000000",
+      type: "extra-rounded"
+    },
+    cornersDotOptions: {
+      color: "#000000",
+      type: "dot"
+    },
+    backgroundOptions: {
+      color: "#ffffff"
+    },
+    imageOptions: {
+      crossOrigin: "anonymous",
+      margin: 0
+    },
+    qrOptions: {
+      errorCorrectionLevel: "H"
+    }
+  });
+
+  const blob = await qrCode.getRawData("png");
+  if (!blob) throw new Error("Failed to generate PNG");
 
   return new Promise((resolve, reject) => {
-    const img = new Image();
-    const canvas = document.createElement('canvas');
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext('2d');
-
-    if (!ctx) {
-      reject(new Error('Could not get canvas context'));
+    if (!(blob instanceof Blob)) {
+      reject(new Error('Expected Blob but got Buffer'));
       return;
     }
 
-    const blob = new Blob([svgString], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-
-    img.onload = () => {
-      ctx.clearRect(0, 0, size, size);
-      ctx.drawImage(img, 0, 0, size, size);
-      URL.revokeObjectURL(url);
-      resolve(canvas.toDataURL('image/png'));
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result);
+      } else {
+        reject(new Error('Failed to convert blob to data URL'));
+      }
     };
-
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error('Failed to load SVG image'));
-    };
-
-    img.src = url;
+    reader.onerror = () => reject(new Error('Failed to read blob'));
+    reader.readAsDataURL(blob);
   });
 }
 
