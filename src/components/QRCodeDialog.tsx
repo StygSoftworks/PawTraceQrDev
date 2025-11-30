@@ -11,8 +11,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { QrCode, Copy, Download, RefreshCw } from "lucide-react";
-import { makeQrSvgString } from "@/lib/qr";
+import { QrCode, Copy, Download, RefreshCw, Square, Circle } from "lucide-react";
+import { makeQrSvgString, makeRoundQrSvgString, makeRoundQrDataUrl, type QRShape } from "@/lib/qr";
 import type { PetRow } from "@/lib/pets";
 import {
   Select,
@@ -40,13 +40,16 @@ export function QRCodeDialog({ pet, open, onOpenChange }: QRCodeDialogProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [svgPreview, setSvgPreview] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState("512");
+  const [qrShape, setQrShape] = useState<QRShape>("square");
 
   useEffect(() => {
     if (open && pet?.short_id) {
       setIsGenerating(true);
       const qrTarget = `https://www.pawtraceqr.com/p/${pet.short_id}`;
 
-      makeQrSvgString(qrTarget)
+      const generateFn = qrShape === "round" ? makeRoundQrSvgString : makeQrSvgString;
+
+      generateFn(qrTarget)
         .then((svgStr) => {
           const svgDataUrl = `data:image/svg+xml;base64,${btoa(svgStr)}`;
           setSvgPreview(svgDataUrl);
@@ -58,7 +61,7 @@ export function QRCodeDialog({ pet, open, onOpenChange }: QRCodeDialogProps) {
     } else {
       setSvgPreview(null);
     }
-  }, [open, pet?.short_id]);
+  }, [open, pet?.short_id, qrShape]);
 
   const publicPageUrl = pet?.short_id ? `https://www.pawtraceqr.com/p/${pet.short_id}` : null;
 
@@ -76,16 +79,23 @@ export function QRCodeDialog({ pet, open, onOpenChange }: QRCodeDialogProps) {
     if (!pet?.short_id) return;
     try {
       const qrTarget = `https://www.pawtraceqr.com/p/${pet.short_id}`;
-      const QRCode = (await import("qrcode")).default;
-      const dataUrl = await QRCode.toDataURL(qrTarget, {
-        errorCorrectionLevel: "M",
-        margin: 1,
-        width: parseInt(size),
-        color: { dark: "#000000", light: "#ffffff" },
-      });
+      let dataUrl: string;
+
+      if (qrShape === "round") {
+        dataUrl = await makeRoundQrDataUrl(qrTarget, parseInt(size));
+      } else {
+        const QRCode = (await import("qrcode")).default;
+        dataUrl = await QRCode.toDataURL(qrTarget, {
+          errorCorrectionLevel: "M",
+          margin: 1,
+          width: parseInt(size),
+          color: { dark: "#000000", light: "#ffffff" },
+        });
+      }
+
       const a = document.createElement("a");
       a.href = dataUrl;
-      a.download = `${pet.name}-qr-${size}px.png`;
+      a.download = `${pet.name}-qr-${qrShape}-${size}px.png`;
       a.click();
     } catch (e) {
       alert("Failed to generate PNG");
@@ -96,12 +106,13 @@ export function QRCodeDialog({ pet, open, onOpenChange }: QRCodeDialogProps) {
     if (!pet?.short_id) return;
     try {
       const qrTarget = `https://www.pawtraceqr.com/p/${pet.short_id}`;
-      const svgString = await makeQrSvgString(qrTarget);
+      const generateFn = qrShape === "round" ? makeRoundQrSvgString : makeQrSvgString;
+      const svgString = await generateFn(qrTarget);
       const blob = new Blob([svgString], { type: "image/svg+xml" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${pet.name}-qr.svg`;
+      a.download = `${pet.name}-qr-${qrShape}.svg`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (e) {
@@ -129,6 +140,35 @@ export function QRCodeDialog({ pet, open, onOpenChange }: QRCodeDialogProps) {
         </DialogHeader>
 
         <div className="flex flex-col items-center gap-4 py-4">
+          <div className="w-full space-y-2">
+            <Label className="text-sm font-semibold text-foreground">QR Code Shape</Label>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant={qrShape === "square" ? "default" : "outline"}
+                className="flex-1 gap-2"
+                onClick={() => setQrShape("square")}
+              >
+                <Square className="h-4 w-4" />
+                Square
+              </Button>
+              <Button
+                type="button"
+                variant={qrShape === "round" ? "default" : "outline"}
+                className="flex-1 gap-2"
+                onClick={() => setQrShape("round")}
+              >
+                <Circle className="h-4 w-4" />
+                Round
+              </Button>
+            </div>
+            {qrShape === "round" && (
+              <p className="text-xs text-muted-foreground">
+                Perfect for round metallic tags. Uses high error correction for reliable scanning.
+              </p>
+            )}
+          </div>
+
           {isGenerating ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground py-8">
               <RefreshCw className="h-4 w-4 animate-spin" />
@@ -136,7 +176,9 @@ export function QRCodeDialog({ pet, open, onOpenChange }: QRCodeDialogProps) {
             </div>
           ) : svgPreview ? (
             <>
-              <div className="p-8 bg-white dark:bg-white rounded-md border-4 border-primary shadow-lg">
+              <div className={`p-8 bg-white dark:bg-white border-4 border-primary shadow-lg ${
+                qrShape === "round" ? "rounded-full" : "rounded-md"
+              }`}>
                 <img
                   src={svgPreview}
                   alt="QR code"
