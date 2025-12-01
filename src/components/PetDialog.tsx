@@ -62,6 +62,7 @@ const PetSchema = z.object({
     rabiesExpires: z.string().optional(),
   }).default({ rabies: false, rabiesExpires: "" }),
   photoPreview: z.string().optional(),
+  environment: z.enum(["indoor", "outdoor", "indoor_outdoor"]).default("indoor_outdoor"),
 });
 
 export type PetFormValues = z.input<typeof PetSchema>;

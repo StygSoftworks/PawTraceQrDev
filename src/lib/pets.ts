@@ -16,6 +16,7 @@ export type PetInsert = {
   notes?: string | null;
   vaccinations?: { rabies?: boolean; rabiesExpires?: string } | null;
   photo_url?: string | null;
+  environment?: "indoor" | "outdoor" | "indoor_outdoor";
 };
 
 export type PetRow = {
@@ -38,6 +39,7 @@ export type PetRow = {
   missing_since: string | null;
   qr_url: string | null;
   short_id: string;
+  environment: "indoor" | "outdoor" | "indoor_outdoor";
 };
 
 export type PetUpdate = Partial<PetInsert> & { id: string };

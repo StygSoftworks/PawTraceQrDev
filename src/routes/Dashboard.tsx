@@ -334,6 +334,7 @@ export default function Dashboard() {
                     }
                   : undefined,
                 photoPreview: editTarget.photo_url ?? undefined,
+                environment: editTarget.environment,
               }}
               onSubmit={handleSaved}
             />
