@@ -104,6 +104,7 @@ export function PetDialog({ mode, open, onOpenChange, initialPet, onSubmit }: Pr
         rabiesExpires: initialPet?.vaccinations?.rabiesExpires ?? "",
       },
       photoPreview: initialPet?.photoPreview ?? "",
+      environment: initialPet?.environment ?? "indoor_outdoor",
     },
     mode: "onSubmit",
   });
