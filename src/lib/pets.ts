@@ -40,6 +40,11 @@ export type PetRow = {
   qr_url: string | null;
   short_id: string;
   environment: "indoor" | "outdoor" | "indoor_outdoor";
+  paypal_subscription_id: string | null;
+  subscription_status: "active" | "inactive" | "expired" | "cancelled" | "pending";
+  subscription_activated_at: string | null;
+  subscription_expires_at: string | null;
+  subscription_plan_id: string | null;
 };
 
 export type PetUpdate = Partial<PetInsert> & { id: string };

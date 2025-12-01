@@ -13,6 +13,7 @@ import { ScanLogger } from "@/components/ScanLogger";
 import { PetScanBadge } from "@/components/PetScanBadge";
 import { SocialMediaLinks } from "@/components/SocialMediaLinks";
 import { LocationShareDialog } from "@/components/LocationShareDialog";
+import { InactiveProfileBanner } from "@/components/InactiveProfileBanner";
 import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
 import { applyTheme, DEFAULT_THEME } from "@/lib/themes";
@@ -40,6 +41,7 @@ type PublicPet = {
   environment: "indoor" | "outdoor" | "indoor_outdoor";
   owner_website: string | null;
   theme_preset?: string | null;
+  subscription_status: "active" | "inactive" | "expired" | "cancelled" | "pending";
 };
 
 function timeSince(iso?: string | null) {
@@ -170,6 +172,10 @@ export default function PublicPet() {
           </Card>
         ) : (
           <div className="space-y-6">
+            {data.subscription_status !== 'active' && (
+              <InactiveProfileBanner petName={data.name} subscriptionStatus={data.subscription_status} />
+            )}
+
             {data.missing && (
               <Alert variant="destructive" className="animate-in fade-in-50 slide-in-from-top-2 duration-300">
                 <AlertTriangle className="h-5 w-5" />

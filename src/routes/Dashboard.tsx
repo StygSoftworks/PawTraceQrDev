@@ -22,12 +22,13 @@ import { LocationSharesCard } from "@/components/LocationSharesCard";
 
 import {
   PawPrint, Plus, QrCode, Edit, Trash2, Eye,
-  AlertTriangle, Activity, RefreshCw, AlertCircle, Sparkles
+  AlertTriangle, Activity, RefreshCw, AlertCircle, Sparkles, ShieldCheck, ShieldAlert
 } from "lucide-react";
 
 import { PetDialog } from "@/components/PetDialog";
 import type { PetRow } from "@/lib/pets";
 import { listPetsByOwner, updatePet } from "@/lib/pets";
+import { getSubscriptionBadgeVariant } from "@/config/billing";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -199,6 +200,24 @@ export default function Dashboard() {
                                 Missing
                               </Badge>
                             )}
+                            <Badge
+                              variant={getSubscriptionBadgeVariant(p.subscription_status)}
+                              className="gap-1 text-xs"
+                            >
+                              {p.subscription_status === 'active' ? (
+                                <>
+                                  <ShieldCheck className="h-3 w-3" />
+                                  Active
+                                </>
+                              ) : (
+                                <>
+                                  <ShieldAlert className="h-3 w-3" />
+                                  {p.subscription_status === 'expired' ? 'Expired' :
+                                   p.subscription_status === 'cancelled' ? 'Cancelled' :
+                                   p.subscription_status === 'pending' ? 'Pending' : 'Inactive'}
+                                </>
+                              )}
+                            </Badge>
                             <Badge variant="secondary" className="capitalize text-xs">
                               {p.species}
                             </Badge>
