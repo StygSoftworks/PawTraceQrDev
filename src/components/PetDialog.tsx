@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/command";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ChevronsUpDown, PawPrint, Palette, Calendar, Weight, FileText, Syringe, Camera, CircleAlert as AlertCircle, Sparkles, Check } from "lucide-react";
+import { ChevronsUpDown, PawPrint, Palette, Calendar, Weight, FileText, Syringe, Camera, CircleAlert as AlertCircle, Sparkles, Check, Home } from "lucide-react";
 import {
   DOG_BREED_NAMES,
   CAT_PATTERN_NAMES,
@@ -157,6 +157,7 @@ export function PetDialog({ mode, open, onOpenChange, initialPet, onSubmit }: Pr
       description: values.description || null,
       notes: values.notes || null,
       vaccinations,
+      environment: values.environment,
     } as const;
 
     try {
@@ -193,6 +194,7 @@ export function PetDialog({ mode, open, onOpenChange, initialPet, onSubmit }: Pr
           description: basePayload.description,
           notes: basePayload.notes,
           vaccinations: basePayload.vaccinations,
+          environment: basePayload.environment,
         };
 
         if (uploadBlob && uploadBlob.size > 0) {
@@ -427,6 +429,28 @@ export function PetDialog({ mode, open, onOpenChange, initialPet, onSubmit }: Pr
                     className="h-11"
                   />
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-sm font-medium flex items-center gap-2">
+                  <Home className="h-3.5 w-3.5" />
+                  Pet Environment
+                </Label>
+                <Select
+                  value={form.watch("environment")}
+                  onValueChange={(v) => {
+                    form.setValue("environment", v as PetFormValues["environment"], { shouldValidate: true });
+                  }}
+                >
+                  <SelectTrigger className="h-11">
+                    <SelectValue placeholder="Select environment" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="indoor">🏠 Indoor Only</SelectItem>
+                    <SelectItem value="outdoor">🌳 Outdoor Only</SelectItem>
+                    <SelectItem value="indoor_outdoor">🏡 Indoor & Outdoor</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">

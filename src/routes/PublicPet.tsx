@@ -37,6 +37,7 @@ type PublicPet = {
   owner_twitter: string | null;
   owner_telegram: string | null;
   owner_whatsapp: string | null;
+  environment: "indoor" | "outdoor" | "indoor_outdoor";
   owner_website: string | null;
   theme_preset?: string | null;
 };
@@ -209,6 +210,11 @@ export default function PublicPet() {
                           {data.color}
                         </Badge>
                       )}
+                      <Badge variant="outline" className="text-sm px-3 py-1">
+                        {data.environment === "indoor" && "🏠 Indoor"}
+                        {data.environment === "outdoor" && "🌳 Outdoor"}
+                        {data.environment === "indoor_outdoor" && "🏡 Indoor & Outdoor"}
+                      </Badge>
                     </div>
                   </div>
                   

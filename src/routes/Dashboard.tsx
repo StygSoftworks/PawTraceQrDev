@@ -202,6 +202,11 @@ export default function Dashboard() {
                             <Badge variant="secondary" className="capitalize text-xs">
                               {p.species}
                             </Badge>
+                            <Badge variant="outline" className="text-xs gap-1">
+                              {p.environment === "indoor" && "🏠 Indoor"}
+                              {p.environment === "outdoor" && "🌳 Outdoor"}
+                              {p.environment === "indoor_outdoor" && "🏡 Both"}
+                            </Badge>
                           </div>
                         </div>
                         <CardDescription className="line-clamp-2 text-sm">
