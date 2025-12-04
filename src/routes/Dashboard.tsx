@@ -226,6 +226,9 @@ export default function Dashboard() {
                               {p.environment === "outdoor" && "🌳 Outdoor"}
                               {p.environment === "indoor_outdoor" && "🏡 Both"}
                             </Badge>
+                            <Badge variant="outline" className="text-xs capitalize" title={`Physical tag size: ${p.tag_type}`}>
+                              {p.tag_type === 'dog' ? '🏷️ Dog Tag' : '🏷️ Cat Tag'}
+                            </Badge>
                           </div>
                         </div>
                         <CardDescription className="line-clamp-2 text-sm">

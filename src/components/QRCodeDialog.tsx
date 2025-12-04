@@ -134,6 +134,11 @@ export function QRCodeDialog({ pet, open, onOpenChange }: QRCodeDialogProps) {
               </DialogTitle>
               <DialogDescription className="text-muted-foreground">
                 Scan to open the public pet page
+                {pet && (
+                  <span className="block mt-1 font-medium">
+                    Physical Tag: {pet.tag_type === 'dog' ? 'Dog Size (Larger)' : 'Cat Size (Smaller)'}
+                  </span>
+                )}
               </DialogDescription>
             </div>
           </div>

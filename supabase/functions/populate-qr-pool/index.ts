@@ -54,24 +54,32 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Generate codes in batches
+    // Generate codes in batches with balanced dog/cat distribution
     let totalGenerated = 0;
+    let totalDog = 0;
+    let totalCat = 0;
     const batches = Math.ceil(needed / batchSize);
 
     for (let i = 0; i < batches; i++) {
       const currentBatchSize = Math.min(batchSize, needed - totalGenerated);
-      
+
+      // Use balanced generation for 50/50 dog/cat split
       const { data: batchResult, error: batchError } = await supabase
-        .rpc("generate_qr_codes_batch", { batch_size: currentBatchSize });
+        .rpc("generate_balanced_qr_pool", { batch_size: currentBatchSize });
 
       if (batchError) {
         throw new Error(`Batch ${i + 1} failed: ${batchError.message}`);
       }
 
-      totalGenerated += batchResult || 0;
+      if (batchResult && batchResult.length > 0) {
+        const result = batchResult[0];
+        totalGenerated += result.total_generated || 0;
+        totalDog += result.dog_generated || 0;
+        totalCat += result.cat_generated || 0;
 
-      // Log progress
-      console.log(`Generated batch ${i + 1}/${batches}: ${batchResult} codes`);
+        // Log progress
+        console.log(`Generated batch ${i + 1}/${batches}: ${result.total_generated} codes (${result.dog_generated} dog, ${result.cat_generated} cat)`);
+      }
     }
 
     // Get final count
@@ -81,10 +89,12 @@ Deno.serve(async (req: Request) => {
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Successfully generated ${totalGenerated} QR codes`,
+        message: `Successfully generated ${totalGenerated} QR codes (${totalDog} dog, ${totalCat} cat)`,
         initial_count: currentCount,
         final_count: finalCount,
         generated: totalGenerated,
+        dog_generated: totalDog,
+        cat_generated: totalCat,
         target_count: targetCount,
       }),
       {

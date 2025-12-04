@@ -39,6 +39,7 @@ export type PetRow = {
   missing_since: string | null;
   qr_url: string | null;
   short_id: string;
+  tag_type: "dog" | "cat";
   environment: "indoor" | "outdoor" | "indoor_outdoor";
   paypal_subscription_id: string | null;
   subscription_status: "active" | "inactive" | "expired" | "cancelled" | "pending";
@@ -62,12 +63,15 @@ export async function createPet(data: PetInsert) {
 
 
 export async function createPet(payload: PetInsert) {
-  // 1) Reserve a QR code from the pool
+  // Determine tag type: dogs get 'dog' tags, everything else gets 'cat' tags
+  const tagType = payload.species === 'dog' ? 'dog' : 'cat';
+
+  // 1) Reserve a QR code from the pool with the appropriate tag type
   const { data: qrData, error: qrError } = await supabase
-    .rpc("reserve_qr_code");
+    .rpc("reserve_qr_code", { p_tag_type: tagType });
 
   if (qrError || !qrData || qrData.length === 0) {
-    throw new Error("No available QR codes in pool. Please contact support.");
+    throw new Error(`No available ${tagType} QR codes in pool. Please contact support.`);
   }
 
   const reservedQr = qrData[0];
