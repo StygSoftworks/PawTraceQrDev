@@ -3,23 +3,61 @@ import { supabase } from "@/lib/supabase";
 
 export type QRShape = 'square' | 'round';
 
+// Constants for consistency
+const DEFAULT_QR_SIZE = 512;
+const DEFAULT_PADDING = 30;
+const DEFAULT_TEXT_HEIGHT = 40;
+const DEFAULT_FONT_SIZE = 24;
+const TEXT_RADIUS_OFFSET = 25;
+
+// Common QR options
+const QR_BASE_OPTIONS = {
+  errorCorrectionLevel: "M" as const,
+  margin: 0,
+  color: { dark: "#000000", light: "#ffffff" },
+};
+
+const STYLED_QR_BASE_OPTIONS = {
+  shape: "circle" as const,
+  dotsOptions: {
+    color: "#000000",
+    type: "extra-rounded" as const,
+  },
+  cornersSquareOptions: {
+    color: "#000000",
+    type: "extra-rounded" as const,
+  },
+  cornersDotOptions: {
+    color: "#000000",
+    type: "dot" as const,
+  },
+  backgroundOptions: {
+    color: "#ffffff",
+  },
+  imageOptions: {
+    crossOrigin: "anonymous" as const,
+    margin: 0,
+  },
+  qrOptions: {
+    errorCorrectionLevel: "H" as const,
+  },
+};
+
 export async function makeQrDataUrl(text: string) {
   const QRCode = (await import("qrcode")).default;
   return await QRCode.toDataURL(text, {
-    errorCorrectionLevel: "M",
+    ...QR_BASE_OPTIONS,
     margin: 1,
     scale: 8,
-    color: { dark: "#000000", light: "#ffffff" },
   });
 }
 
 export async function makeQrSvgString(text: string): Promise<string> {
   const QRCode = (await import("qrcode")).default;
   return await QRCode.toString(text, {
+    ...QR_BASE_OPTIONS,
     type: "svg",
-    errorCorrectionLevel: "M",
     margin: 1,
-    color: { dark: "#000000", light: "#ffffff" },
   });
 }
 
@@ -27,88 +65,37 @@ export async function makeRoundQrSvgString(text: string): Promise<string> {
   const QRCodeStyling = (await import("qr-code-styling")).default;
 
   const qrCode = new QRCodeStyling({
-    width: 512,
-    height: 512,
+    width: DEFAULT_QR_SIZE,
+    height: DEFAULT_QR_SIZE,
     data: text,
-    shape: "circle",
     type: "svg",
-    dotsOptions: {
-      color: "#000000",
-      type: "extra-rounded"
-    },
-    cornersSquareOptions: {
-      color: "#000000",
-      type: "extra-rounded"
-    },
-    cornersDotOptions: {
-      color: "#000000",
-      type: "dot"
-    },
-    backgroundOptions: {
-      color: "#ffffff"
-    },
-    imageOptions: {
-      crossOrigin: "anonymous",
-      margin: 0
-    },
-    qrOptions: {
-      errorCorrectionLevel: "H"
-    }
+    ...STYLED_QR_BASE_OPTIONS,
   });
 
   const blob = await qrCode.getRawData("svg");
   if (!blob) throw new Error("Failed to generate SVG");
 
-  if (blob instanceof Blob) {
-    const text_data = await blob.text();
-    return text_data;
-  } else {
-    return blob.toString();
-  }
+  return blob instanceof Blob ? await blob.text() : blob.toString();
 }
 
-export async function makeRoundQrDataUrl(text: string, size = 512): Promise<string> {
+export async function makeRoundQrDataUrl(text: string, size = DEFAULT_QR_SIZE): Promise<string> {
   const QRCodeStyling = (await import("qr-code-styling")).default;
 
   const qrCode = new QRCodeStyling({
     width: size,
     height: size,
     data: text,
-    shape: "circle",
     type: "canvas",
-    dotsOptions: {
-      color: "#000000",
-      type: "extra-rounded"
-    },
-    cornersSquareOptions: {
-      color: "#000000",
-      type: "extra-rounded"
-    },
-    cornersDotOptions: {
-      color: "#000000",
-      type: "dot"
-    },
-    backgroundOptions: {
-      color: "#ffffff"
-    },
-    imageOptions: {
-      crossOrigin: "anonymous",
-      margin: 0
-    },
-    qrOptions: {
-      errorCorrectionLevel: "H"
-    }
+    ...STYLED_QR_BASE_OPTIONS,
   });
 
   const blob = await qrCode.getRawData("png");
   if (!blob) throw new Error("Failed to generate PNG");
+  if (!(blob instanceof Blob)) {
+    throw new Error('Expected Blob but got Buffer');
+  }
 
   return new Promise((resolve, reject) => {
-    if (!(blob instanceof Blob)) {
-      reject(new Error('Expected Blob but got Buffer'));
-      return;
-    }
-
     const reader = new FileReader();
     reader.onloadend = () => {
       if (typeof reader.result === 'string') {
@@ -122,111 +109,129 @@ export async function makeRoundQrDataUrl(text: string, size = 512): Promise<stri
   });
 }
 
-export async function makeQrSvgWithText(qrText: string, displayText: string, size = 512): Promise<string> {
+export async function makeQrSvgWithText(
+  qrText: string,
+  displayText: string,
+  size = DEFAULT_QR_SIZE
+): Promise<string> {
   const QRCode = (await import("qrcode")).default;
 
+  // Generate QR with proper scale to achieve desired size
+  // The scale parameter determines module size, not total size
+  // We'll generate at a fixed scale and then scale the SVG
   const qrSvg = await QRCode.toString(qrText, {
+    ...QR_BASE_OPTIONS,
     type: "svg",
-    errorCorrectionLevel: "M",
-    margin: 0,
-    color: { dark: "#000000", light: "#ffffff" },
   });
 
+  // Parse and extract the QR path data
   const parser = new DOMParser();
   const qrDoc = parser.parseFromString(qrSvg, "image/svg+xml");
   const qrSvgElement = qrDoc.documentElement;
+  
+  // Get the original viewBox to maintain aspect ratio
+  const viewBox = qrSvgElement.getAttribute("viewBox")?.split(" ").map(Number) || [0, 0, 100, 100];
+  const [, , origWidth, origHeight] = viewBox;
+  
+  const qrInner = qrSvgElement.innerHTML;
 
-  const qrWidth = parseInt(qrSvgElement.getAttribute("width") || String(size));
-  const qrHeight = parseInt(qrSvgElement.getAttribute("height") || String(size));
+  const padding = DEFAULT_PADDING;
+  const textHeight = DEFAULT_TEXT_HEIGHT;
+  const totalWidth = size + padding * 2;
+  const totalHeight = size + padding * 2 + textHeight;
 
-  const textHeight = 60;
-  const padding = 20;
-  const totalWidth = qrWidth + (padding * 2);
-  const totalHeight = qrHeight + textHeight + (padding * 3);
+  // Calculate scale to fit QR into desired size
+  const scaleX = size / origWidth;
+  const scaleY = size / origHeight;
 
-  const wrappedSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${totalWidth}" height="${totalHeight}" viewBox="0 0 ${totalWidth} ${totalHeight}">
+  const wrappedSvg = `
+<svg xmlns="http://www.w3.org/2000/svg" width="${totalWidth}" height="${totalHeight}" viewBox="0 0 ${totalWidth} ${totalHeight}">
   <rect width="${totalWidth}" height="${totalHeight}" fill="#ffffff"/>
-  <g transform="translate(${padding}, ${padding})">
-    ${qrSvgElement.innerHTML}
+  <g transform="translate(${padding}, ${padding}) scale(${scaleX}, ${scaleY})">
+    ${qrInner}
   </g>
-  <text x="${totalWidth / 2}" y="${qrHeight + padding * 2 + 35}" font-family="Arial, sans-serif" font-size="24" font-weight="500" fill="#000000" text-anchor="middle">${displayText}</text>
-</svg>`;
+  <text
+    x="${totalWidth / 2}"
+    y="${size + padding + textHeight * 0.7}"
+    font-family="system-ui, -apple-system, sans-serif"
+    font-size="${DEFAULT_FONT_SIZE}"
+    font-weight="600"
+    fill="#000000"
+    text-anchor="middle"
+  >
+    ${escapeXml(displayText)}
+  </text>
+</svg>`.trim();
 
   return wrappedSvg;
 }
 
-export async function makeRoundQrSvgWithText(qrText: string, displayText: string, size = 512): Promise<string> {
+export async function makeRoundQrSvgWithText(
+  qrText: string,
+  displayText: string,
+  size = DEFAULT_QR_SIZE
+): Promise<string> {
   const QRCodeStyling = (await import("qr-code-styling")).default;
 
   const qrCode = new QRCodeStyling({
     width: size,
     height: size,
     data: qrText,
-    shape: "circle",
     type: "svg",
-    dotsOptions: {
-      color: "#000000",
-      type: "extra-rounded"
-    },
-    cornersSquareOptions: {
-      color: "#000000",
-      type: "extra-rounded"
-    },
-    cornersDotOptions: {
-      color: "#000000",
-      type: "dot"
-    },
-    backgroundOptions: {
-      color: "#ffffff"
-    },
-    imageOptions: {
-      crossOrigin: "anonymous",
-      margin: 0
-    },
-    qrOptions: {
-      errorCorrectionLevel: "H"
-    }
+    ...STYLED_QR_BASE_OPTIONS,
   });
 
   const blob = await qrCode.getRawData("svg");
   if (!blob) throw new Error("Failed to generate SVG");
 
-  let qrSvgContent: string;
-  if (blob instanceof Blob) {
-    qrSvgContent = await blob.text();
-  } else {
-    qrSvgContent = blob.toString();
-  }
-
+  const qrSvgContent = blob instanceof Blob ? await blob.text() : blob.toString();
   const parser = new DOMParser();
   const qrDoc = parser.parseFromString(qrSvgContent, "image/svg+xml");
-  const qrSvgElement = qrDoc.documentElement;
+  const qrInner = qrDoc.documentElement.innerHTML;
 
-  const padding = 30;
-  const totalSize = size + (padding * 2);
-  const radius = (size / 2) + 40;
+  const padding = DEFAULT_PADDING;
+  const totalSize = size + padding * 2;
   const centerX = totalSize / 2;
   const centerY = totalSize / 2;
+  const textRadius = size / 2 + TEXT_RADIUS_OFFSET;
+  const pathId = `textPath_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 
-  const pathId = `textPath_${Math.random().toString(36).substr(2, 9)}`;
+  // Top arc for curved text
+  const pathD = `M ${centerX - textRadius},${centerY} A ${textRadius},${textRadius} 0 0 0 ${centerX + textRadius},${centerY}`;
 
-  const wrappedSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${totalSize}" height="${totalSize}" viewBox="0 0 ${totalSize} ${totalSize}">
+  const wrappedSvg = `
+<svg xmlns="http://www.w3.org/2000/svg" width="${totalSize}" height="${totalSize}" viewBox="0 0 ${totalSize} ${totalSize}">
   <rect width="${totalSize}" height="${totalSize}" fill="#ffffff"/>
   <g transform="translate(${padding}, ${padding})">
-    ${qrSvgElement.innerHTML}
+    ${qrInner}
   </g>
   <defs>
-    <path id="${pathId}" d="M ${centerX - radius * 0.7},${centerY + radius * 0.7} A ${radius},${radius} 0 0,1 ${centerX + radius * 0.7},${centerY + radius * 0.7}" fill="none"/>
+    <path id="${pathId}" d="${pathD}" fill="none" />
   </defs>
-  <text font-family="Arial, sans-serif" font-size="20" font-weight="500" fill="#000000" text-anchor="middle">
-    <textPath href="#${pathId}" startOffset="50%">${displayText}</textPath>
+  <text
+    font-family="system-ui, -apple-system, sans-serif"
+    font-size="${DEFAULT_FONT_SIZE}"
+    font-weight="600"
+    fill="#000000"
+  >
+    <textPath href="#${pathId}" startOffset="50%" text-anchor="middle">
+      ${escapeXml(displayText)}
+    </textPath>
   </text>
-</svg>`;
+</svg>`.trim();
 
   return wrappedSvg;
 }
 
-
+// Helper to escape XML special characters in text
+function escapeXml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
 
 // Convert a data URL to a Blob object
 export async function dataUrlToBlob(dataUrl: string): Promise<Blob> {
@@ -235,11 +240,12 @@ export async function dataUrlToBlob(dataUrl: string): Promise<Blob> {
 }
 
 /** Upload the QR PNG blob to the pet-qr bucket and return a public URL */
-export async function uploadPetQr(ownerId: string, shortId: string, blob: Blob) {
-  const path = `${ownerId}/${shortId}.png`; // store by short_id too
+export async function uploadPetQr(ownerId: string, shortId: string, blob: Blob): Promise<string> {
+  const path = `${ownerId}/${shortId}.png`;
   const { error } = await supabase.storage
     .from("pet-qr")
     .upload(path, blob, { contentType: "image/png", upsert: true });
+  
   if (error) throw error;
 
   const { data } = supabase.storage.from("pet-qr").getPublicUrl(path);
@@ -250,12 +256,12 @@ export async function uploadPetQr(ownerId: string, shortId: string, blob: Blob) 
  * Generate a QR that points to your public pet page and upload it.
  * Returns the QR public URL.
  */
-export async function generateAndStorePetQr(ownerId: string, shortId: string) {
-  // Decide what the QR should open. Common choices:
-  // - Your app’s public pet page: https://yourapp.com/p/<petId>
-  // - Or a deep-link like pawtrace://pet/<petId>
-  const qrTarget = `https://www.pawtraceqr.com/p/${shortId}`;
-
+export async function generateAndStorePetQr(
+  ownerId: string, 
+  shortId: string,
+  baseUrl = "https://www.pawtraceqr.com"
+): Promise<string> {
+  const qrTarget = `${baseUrl}/p/${shortId}`;
   const dataUrl = await makeQrDataUrl(qrTarget);
   const blob = await dataUrlToBlob(dataUrl);
   return await uploadPetQr(ownerId, shortId, blob);

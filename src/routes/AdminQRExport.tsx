@@ -257,6 +257,7 @@ export default function AdminQRExport() {
                     <SelectItem value="10">10 codes</SelectItem>
                     <SelectItem value="25">25 codes</SelectItem>
                     <SelectItem value="50">50 codes</SelectItem>
+                    <SelectItem value="200">200 codes</SelectItem>
                     <SelectItem value="100">100 codes</SelectItem>
                     <SelectItem value="500">500 codes</SelectItem>
                   </SelectContent>
