@@ -1,4 +1,6 @@
 import { supabase } from "@/lib/supabase";
+import { makeQrSvgWithText, makeRoundQrSvgWithText } from "@/lib/qr";
+import JSZip from "jszip";
 
 export interface QRCodeRecord {
   id: string;
@@ -57,30 +59,63 @@ export async function fetchQrPoolStats(): Promise<QRPoolStats> {
   return data?.[0] || null;
 }
 
+async function fetchQrCodesForExport(options: ExportOptions): Promise<QRCodeRecord[]> {
+  const { tag_type, shortcodes, limit = 100 } = options;
+
+  if (shortcodes && shortcodes.length > 0) {
+    const qrCodes: QRCodeRecord[] = [];
+    for (const shortcode of shortcodes) {
+      const qr = await fetchQrCodeByShortId(shortcode);
+      if (qr) {
+        qrCodes.push(qr);
+      }
+    }
+    return qrCodes;
+  } else {
+    return await fetchAvailableQrCodes(tag_type || null, limit, 0);
+  }
+}
+
 export async function exportQrCodes(options: ExportOptions): Promise<Blob> {
-  const { data: session } = await supabase.auth.getSession();
-  if (!session.session) {
-    throw new Error("Not authenticated");
+  const qrCodes = await fetchQrCodesForExport(options);
+
+  if (qrCodes.length === 0) {
+    throw new Error("No QR codes found matching criteria");
   }
 
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const apiUrl = `${supabaseUrl}/functions/v1/export-qr-codes`;
+  const zip = new JSZip();
+  const baseUrl = "https://www.pawtraceqr.com/p/";
 
-  const response = await fetch(apiUrl, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${session.session.access_token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(options),
-  });
+  for (const qr of qrCodes) {
+    const qrUrl = `${baseUrl}${qr.short_id}`;
+    const displayText = `pawtraceqr.com/p/${qr.short_id}`;
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ error: "Export failed" }));
-    throw new Error(errorData.error || "Export failed");
+    let svgContent: string;
+    if (options.shape === "round") {
+      svgContent = await makeRoundQrSvgWithText(qrUrl, displayText);
+    } else {
+      svgContent = await makeQrSvgWithText(qrUrl, displayText);
+    }
+
+    const filename = `${qr.tag_type}-${qr.short_id}.svg`;
+    zip.file(filename, svgContent);
   }
 
-  return await response.blob();
+  const manifest = {
+    exported_at: new Date().toISOString(),
+    shape: options.shape,
+    tag_type: options.tag_type || "all",
+    count: qrCodes.length,
+    codes: qrCodes.map(qr => ({
+      short_id: qr.short_id,
+      tag_type: qr.tag_type,
+      filename: `${qr.tag_type}-${qr.short_id}.svg`,
+    })),
+  };
+
+  zip.file("manifest.json", JSON.stringify(manifest, null, 2));
+
+  return await zip.generateAsync({ type: "blob" });
 }
 
 export function downloadBlob(blob: Blob, filename: string) {
