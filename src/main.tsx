@@ -16,6 +16,7 @@ const ResetPassword = lazy(() => import("./routes/ResetPassword"));
 const Feedback = lazy(() => import("./routes/Feedback"));
 const Reviews = lazy(() => import("./routes/Reviews"));
 const ReviewsModeration = lazy(() => import("./routes/ReviewsModeration"));
+const AdminQRExport = lazy(() => import("./routes/AdminQRExport"));
 const Billing = lazy(() => import("./routes/Billing"));
 const Pricing = lazy(() => import("./routes/Pricing"));
 const About = lazy(() => import("./routes/About"));
@@ -62,6 +63,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                 <Route path="feedback" element={<Feedback />} />
                 <Route path="reviews" element={<Reviews />} />
                 <Route path="reviews/moderation" element={<ReviewsModeration />} />
+                <Route path="admin/qr-export" element={<AdminQRExport />} />
                 <Route path="pricing" element={<Pricing />} />
                 <Route path="billing/success" element={<BillingSuccess />} />
                 <Route path="billing/cancel" element={<BillingCancel />} />

@@ -2,7 +2,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
-import { Menu, LogIn, UserPlus, MessageSquare, ShieldCheck, CreditCard, Hop as Home, LayoutDashboard, User, Moon, Sun, Info, Mail } from "lucide-react";
+import { Menu, LogIn, UserPlus, MessageSquare, ShieldCheck, CreditCard, Hop as Home, LayoutDashboard, User, Moon, Sun, Info, Mail, QrCode } from "lucide-react";
 import { useAuth } from "@/auth/AuthProvider";
 import { useProfile } from "@/profile/useProfile";
 import { useTheme } from "@/hooks/useTheme";
@@ -23,11 +23,18 @@ const getAuthenticatedNavItems = (userRole?: string) => {
   ];
 
   if (userRole === "admin" || userRole === "owner") {
-    items.push({
-      to: "/reviews/moderation",
-      label: "Review Moderation",
-      icon: ShieldCheck,
-    });
+    items.push(
+      {
+        to: "/admin/qr-export",
+        label: "QR Export",
+        icon: QrCode,
+      },
+      {
+        to: "/reviews/moderation",
+        label: "Review Moderation",
+        icon: ShieldCheck,
+      }
+    );
   }
 
   return items;
