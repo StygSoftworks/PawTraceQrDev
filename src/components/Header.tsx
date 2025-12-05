@@ -2,7 +2,8 @@ import { NavLink, useLocation } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
-import { Menu, LogIn, UserPlus, MessageSquare, ShieldCheck, CreditCard, Hop as Home, LayoutDashboard, User, Moon, Sun, Info, Mail, QrCode, PawPrint } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Menu, LogIn, UserPlus, MessageSquare, ShieldCheck, CreditCard, Hop as Home, LayoutDashboard, User, Moon, Sun, Info, Mail, QrCode, PawPrint, ChevronDown } from "lucide-react";
 import { useAuth } from "@/auth/AuthProvider";
 import { useProfile } from "@/profile/useProfile";
 import { useTheme } from "@/hooks/useTheme";
@@ -90,6 +91,47 @@ const MobileNavItem = ({
       <Icon className="h-5 w-5" />
       {children}
     </NavLink>
+  );
+};
+
+const AdminDropdown = ({ items }: { items: Array<{ to: string; label: string; icon: React.ElementType }> }) => {
+  const { pathname } = useLocation();
+  const isAdminRoute = pathname.startsWith("/admin");
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors
+            ${isAdminRoute
+              ? "bg-white/20 text-white"
+              : "text-white/80 hover:text-white hover:bg-white/10"
+            }`}
+        >
+          Admin
+          <ChevronDown className="ml-1 h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-48">
+        {items.map((item) => {
+          const Icon = item.icon;
+          const active = pathname === item.to || (item.to !== "/" && pathname.startsWith(item.to + "/"));
+          return (
+            <DropdownMenuItem key={item.to} asChild>
+              <NavLink
+                to={item.to}
+                className={`flex items-center gap-2 cursor-pointer
+                  ${active ? "bg-primary/10" : ""}`}
+              >
+                <Icon className="h-4 w-4" />
+                {item.label}
+              </NavLink>
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 
@@ -211,11 +253,7 @@ export default function Header() {
                   {isAdmin && adminNavItems.length > 0 && (
                     <>
                       <Separator orientation="vertical" className="mx-2 h-6 bg-white/20" />
-                      {adminNavItems.map((item) => (
-                        <NavItem key={item.to} to={item.to}>
-                          {item.label}
-                        </NavItem>
-                      ))}
+                      <AdminDropdown items={adminNavItems} />
                     </>
                   )}
                 </nav>
