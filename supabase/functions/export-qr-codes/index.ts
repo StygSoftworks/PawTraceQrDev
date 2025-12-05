@@ -1,6 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import QRCode from "npm:qrcode@1.5.4";
-import QRCodeStyling from "npm:qr-code-styling@1.9.2";
 import JSZip from "npm:jszip@3.10.1";
 
 const corsHeaders = {
@@ -56,62 +55,41 @@ async function makeQrSvgWithText(qrText: string, displayText: string, size = 512
 }
 
 async function makeRoundQrSvgWithText(qrText: string, displayText: string, size = 512): Promise<string> {
-  const qrCode = new QRCodeStyling({
-    width: size,
-    height: size,
-    data: qrText,
-    shape: "circle",
+  const qrSvg = await QRCode.toString(qrText, {
     type: "svg",
-    dotsOptions: {
-      color: "#000000",
-      type: "extra-rounded"
-    },
-    cornersSquareOptions: {
-      color: "#000000",
-      type: "extra-rounded"
-    },
-    cornersDotOptions: {
-      color: "#000000",
-      type: "dot"
-    },
-    backgroundOptions: {
-      color: "#ffffff"
-    },
-    qrOptions: {
-      errorCorrectionLevel: "H"
-    }
+    errorCorrectionLevel: "H",
+    margin: 2,
+    width: size,
+    color: { dark: "#000000", light: "#ffffff" },
   });
 
-  const blob = await qrCode.getRawData("svg");
-  if (!blob) throw new Error("Failed to generate SVG");
-
-  let qrSvgContent: string;
-  if (blob instanceof Blob) {
-    qrSvgContent = await blob.text();
-  } else {
-    qrSvgContent = blob.toString();
-  }
-
-  const svgMatch = qrSvgContent.match(/<svg[^>]*>([\s\S]*)<\/svg>/);
+  const svgMatch = qrSvg.match(/<svg[^>]*>([\s\S]*)<\/svg>/);
   if (!svgMatch) throw new Error("Failed to parse QR SVG");
 
   const svgContent = svgMatch[1];
   const padding = 30;
   const totalSize = size + (padding * 2);
+  const qrCenter = size / 2;
+  const circleRadius = size / 2;
   const radius = (size / 2) + 40;
   const centerX = totalSize / 2;
   const centerY = totalSize / 2;
 
   const pathId = `textPath_${Math.random().toString(36).substr(2, 9)}`;
+  const maskId = `circleMask_${Math.random().toString(36).substr(2, 9)}`;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${totalSize}" height="${totalSize}" viewBox="0 0 ${totalSize} ${totalSize}">
   <rect width="${totalSize}" height="${totalSize}" fill="#ffffff"/>
-  <g transform="translate(${padding}, ${padding})">
-    ${svgContent}
-  </g>
   <defs>
+    <clipPath id="${maskId}">
+      <circle cx="${centerX}" cy="${centerY}" r="${circleRadius}"/>
+    </clipPath>
     <path id="${pathId}" d="M ${centerX - radius * 0.7},${centerY + radius * 0.7} A ${radius},${radius} 0 0,1 ${centerX + radius * 0.7},${centerY + radius * 0.7}" fill="none"/>
   </defs>
+  <g transform="translate(${padding}, ${padding})" clip-path="url(#${maskId})">
+    ${svgContent}
+  </g>
+  <circle cx="${centerX}" cy="${centerY}" r="${circleRadius}" fill="none" stroke="#000000" stroke-width="2"/>
   <text font-family="Arial, sans-serif" font-size="20" font-weight="500" fill="#000000" text-anchor="middle">
     <textPath href="#${pathId}" startOffset="50%">${displayText}</textPath>
   </text>
