@@ -26,39 +26,7 @@ async function makeQrSvgWithText(qrText: string, displayText: string, size = 512
   const qrSvg = await QRCode.toString(qrText, {
     type: "svg",
     errorCorrectionLevel: "M",
-    margin: 0,
-    color: { dark: "#000000", light: "#ffffff" },
-  });
-
-  const svgMatch = qrSvg.match(/<svg[^>]*>([\s\S]*)<\/svg>/);
-  if (!svgMatch) throw new Error("Failed to parse QR SVG");
-
-  const svgContent = svgMatch[1];
-  const widthMatch = qrSvg.match(/width="([^"]+)"/);
-  const heightMatch = qrSvg.match(/height="([^"]+)"/);
-  
-  const qrWidth = widthMatch ? parseInt(widthMatch[1]) : size;
-  const qrHeight = heightMatch ? parseInt(heightMatch[1]) : size;
-
-  const textHeight = 60;
-  const padding = 20;
-  const totalWidth = qrWidth + (padding * 2);
-  const totalHeight = qrHeight + textHeight + (padding * 3);
-
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${totalWidth}" height="${totalHeight}" viewBox="0 0 ${totalWidth} ${totalHeight}">
-  <rect width="${totalWidth}" height="${totalHeight}" fill="#ffffff"/>
-  <g transform="translate(${padding}, ${padding})">
-    ${svgContent}
-  </g>
-  <text x="${totalWidth / 2}" y="${qrHeight + padding * 2 + 35}" font-family="Arial, sans-serif" font-size="24" font-weight="500" fill="#000000" text-anchor="middle">${displayText}</text>
-</svg>`;
-}
-
-async function makeRoundQrSvgWithText(qrText: string, displayText: string, size = 512): Promise<string> {
-  const qrSvg = await QRCode.toString(qrText, {
-    type: "svg",
-    errorCorrectionLevel: "H",
-    margin: 2,
+    margin: 1,
     width: size,
     color: { dark: "#000000", light: "#ffffff" },
   });
@@ -67,13 +35,60 @@ async function makeRoundQrSvgWithText(qrText: string, displayText: string, size 
   if (!svgMatch) throw new Error("Failed to parse QR SVG");
 
   const svgContent = svgMatch[1];
+
+  const viewBoxMatch = qrSvg.match(/viewBox="([^"]+)"/);
+  let qrWidth = size;
+  let qrHeight = size;
+
+  if (viewBoxMatch) {
+    const viewBoxValues = viewBoxMatch[1].split(/\s+/);
+    qrWidth = parseFloat(viewBoxValues[2]) || size;
+    qrHeight = parseFloat(viewBoxValues[3]) || size;
+  }
+
   const padding = 30;
+  const textSize = 28;
+  const textMargin = 15;
+  const totalWidth = qrWidth + (padding * 2);
+  const totalHeight = qrHeight + (padding * 2) + textMargin + textSize + 10;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${totalWidth}" height="${totalHeight}" viewBox="0 0 ${totalWidth} ${totalHeight}">
+  <rect width="${totalWidth}" height="${totalHeight}" fill="#ffffff"/>
+  <g transform="translate(${padding}, ${padding}) scale(${qrWidth / size}, ${qrHeight / size})">
+    ${svgContent}
+  </g>
+  <text x="${totalWidth / 2}" y="${qrHeight + padding + textMargin + textSize}" font-family="Arial, sans-serif" font-size="${textSize}" font-weight="600" fill="#000000" text-anchor="middle">${displayText}</text>
+</svg>`;
+}
+
+async function makeRoundQrSvgWithText(qrText: string, displayText: string, size = 512): Promise<string> {
+  const qrSvg = await QRCode.toString(qrText, {
+    type: "svg",
+    errorCorrectionLevel: "H",
+    margin: 0,
+    width: size,
+    color: { dark: "#000000", light: "#ffffff" },
+  });
+
+  const svgMatch = qrSvg.match(/<svg[^>]*>([\s\S]*)<\/svg>/);
+  if (!svgMatch) throw new Error("Failed to parse QR SVG");
+
+  const svgContent = svgMatch[1];
+
+  const viewBoxMatch = qrSvg.match(/viewBox="([^"]+)"/);
+  let qrWidth = size;
+
+  if (viewBoxMatch) {
+    const viewBoxValues = viewBoxMatch[1].split(/\s+/);
+    qrWidth = parseFloat(viewBoxValues[2]) || size;
+  }
+
+  const padding = 40;
   const totalSize = size + (padding * 2);
-  const qrCenter = size / 2;
-  const circleRadius = size / 2;
-  const radius = (size / 2) + 40;
   const centerX = totalSize / 2;
   const centerY = totalSize / 2;
+  const circleRadius = size / 2;
+  const textRadius = circleRadius + 25;
 
   const pathId = `textPath_${Math.random().toString(36).substr(2, 9)}`;
   const maskId = `circleMask_${Math.random().toString(36).substr(2, 9)}`;
@@ -84,13 +99,17 @@ async function makeRoundQrSvgWithText(qrText: string, displayText: string, size 
     <clipPath id="${maskId}">
       <circle cx="${centerX}" cy="${centerY}" r="${circleRadius}"/>
     </clipPath>
-    <path id="${pathId}" d="M ${centerX - radius * 0.7},${centerY + radius * 0.7} A ${radius},${radius} 0 0,1 ${centerX + radius * 0.7},${centerY + radius * 0.7}" fill="none"/>
+    <path id="${pathId}" d="M ${centerX - textRadius * 0.85},${centerY + textRadius * 0.7} A ${textRadius},${textRadius} 0 0,1 ${centerX + textRadius * 0.85},${centerY + textRadius * 0.7}" fill="none"/>
   </defs>
-  <g transform="translate(${padding}, ${padding})" clip-path="url(#${maskId})">
-    ${svgContent}
+  <g transform="translate(${centerX}, ${centerY})">
+    <g transform="scale(${size / qrWidth})" clip-path="url(#${maskId})">
+      <g transform="translate(${-qrWidth / 2}, ${-qrWidth / 2})">
+        ${svgContent}
+      </g>
+    </g>
   </g>
-  <circle cx="${centerX}" cy="${centerY}" r="${circleRadius}" fill="none" stroke="#000000" stroke-width="2"/>
-  <text font-family="Arial, sans-serif" font-size="20" font-weight="500" fill="#000000" text-anchor="middle">
+  <circle cx="${centerX}" cy="${centerY}" r="${circleRadius}" fill="none" stroke="#000000" stroke-width="3"/>
+  <text font-family="Arial, sans-serif" font-size="24" font-weight="600" fill="#000000" text-anchor="middle">
     <textPath href="#${pathId}" startOffset="50%">${displayText}</textPath>
   </text>
 </svg>`;
