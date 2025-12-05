@@ -32,9 +32,9 @@ export async function fetchAvailableQrCodes(
   offset = 0
 ): Promise<QRCodeRecord[]> {
   const { data, error } = await supabase.rpc("get_available_qr_codes", {
-    p_tag_type: tagType,
     p_limit: limit,
     p_offset: offset,
+    p_tag_type: tagType,
   });
 
   if (error) throw error;
