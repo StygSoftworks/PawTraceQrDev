@@ -2,7 +2,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
-import { Menu, LogIn, UserPlus, MessageSquare, ShieldCheck, CreditCard, Hop as Home, LayoutDashboard, User, Moon, Sun, Info, Mail, QrCode } from "lucide-react";
+import { Menu, LogIn, UserPlus, MessageSquare, ShieldCheck, CreditCard, Hop as Home, LayoutDashboard, User, Moon, Sun, Info, Mail, QrCode, PawPrint } from "lucide-react";
 import { useAuth } from "@/auth/AuthProvider";
 import { useProfile } from "@/profile/useProfile";
 import { useTheme } from "@/hooks/useTheme";
@@ -11,7 +11,7 @@ import { HeaderAuth } from "@/components/HeaderAuth";
 import type * as React from "react";
 import { useState } from "react";
 
-const getAuthenticatedNavItems = (userRole?: string) => {
+const getAuthenticatedNavItems = () => {
   const items = [
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { to: "/account", label: "Account", icon: User },
@@ -22,23 +22,14 @@ const getAuthenticatedNavItems = (userRole?: string) => {
     { to: "/about", label: "About", icon: Info },
   ];
 
-  if (userRole === "admin" || userRole === "owner") {
-    items.push(
-      {
-        to: "/admin/qr-export",
-        label: "QR Export",
-        icon: QrCode,
-      },
-      {
-        to: "/reviews/moderation",
-        label: "Review Moderation",
-        icon: ShieldCheck,
-      }
-    );
-  }
-
   return items;
 };
+
+const getAdminNavItems = () => [
+  { to: "/admin/pets", label: "All Pets", icon: PawPrint },
+  { to: "/admin/qr-export", label: "QR Export", icon: QrCode },
+  { to: "/admin/reviews", label: "Reviews", icon: ShieldCheck },
+];
 
 const getPublicNavItems = () => [
   { to: "/", label: "Home", icon: Home },
@@ -108,7 +99,9 @@ export default function Header() {
   const { darkMode, toggleDarkMode } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navItems = user ? getAuthenticatedNavItems(profile?.role) : getPublicNavItems();
+  const navItems = user ? getAuthenticatedNavItems() : getPublicNavItems();
+  const isAdmin = profile?.role === "admin" || profile?.role === "owner";
+  const adminNavItems = isAdmin ? getAdminNavItems() : [];
 
   const handleMobileNavClick = () => {
     setMobileMenuOpen(false);
@@ -152,6 +145,26 @@ export default function Header() {
                       </MobileNavItem>
                     ))}
 
+                    {!loading && isAdmin && adminNavItems.length > 0 && (
+                      <>
+                        <Separator className="my-4" />
+                        <div className="px-4 py-2">
+                          <p className="text-xs font-semibold text-white/70 uppercase tracking-wider">Admin</p>
+                        </div>
+                        {adminNavItems.map((item, index) => (
+                          <MobileNavItem
+                            key={item.to}
+                            to={item.to}
+                            icon={item.icon}
+                            onClick={handleMobileNavClick}
+                            index={navItems.length + index}
+                          >
+                            {item.label}
+                          </MobileNavItem>
+                        ))}
+                      </>
+                    )}
+
                     {!loading && !user && (
                       <>
                         <Separator className="my-4" />
@@ -159,7 +172,7 @@ export default function Header() {
                           to="/signin"
                           icon={LogIn}
                           onClick={handleMobileNavClick}
-                          index={navItems.length}
+                          index={navItems.length + adminNavItems.length}
                         >
                           Sign in
                         </MobileNavItem>
@@ -167,7 +180,7 @@ export default function Header() {
                           to="/register"
                           icon={UserPlus}
                           onClick={handleMobileNavClick}
-                          index={navItems.length + 1}
+                          index={navItems.length + adminNavItems.length + 1}
                         >
                           Sign up
                         </MobileNavItem>
@@ -195,6 +208,16 @@ export default function Header() {
                       {item.label}
                     </NavItem>
                   ))}
+                  {isAdmin && adminNavItems.length > 0 && (
+                    <>
+                      <Separator orientation="vertical" className="mx-2 h-6 bg-white/20" />
+                      {adminNavItems.map((item) => (
+                        <NavItem key={item.to} to={item.to}>
+                          {item.label}
+                        </NavItem>
+                      ))}
+                    </>
+                  )}
                 </nav>
               </>
             )}

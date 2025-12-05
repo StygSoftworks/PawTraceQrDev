@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { BillingSuccess, BillingCancel } from "./routes/BillingResult";
 const AppLayout = lazy(() => import("./routes/AppLayout"));
 const Home = lazy(() => import("./routes/Home"));
@@ -17,6 +17,7 @@ const Feedback = lazy(() => import("./routes/Feedback"));
 const Reviews = lazy(() => import("./routes/Reviews"));
 const ReviewsModeration = lazy(() => import("./routes/ReviewsModeration"));
 const AdminQRExport = lazy(() => import("./routes/AdminQRExport"));
+const AdminPets = lazy(() => import("./routes/AdminPets"));
 const Billing = lazy(() => import("./routes/Billing"));
 const Pricing = lazy(() => import("./routes/Pricing"));
 const About = lazy(() => import("./routes/About"));
@@ -62,7 +63,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                 <Route path="reset-password" element={<ResetPassword />} />
                 <Route path="feedback" element={<Feedback />} />
                 <Route path="reviews" element={<Reviews />} />
-                <Route path="reviews/moderation" element={<ReviewsModeration />} />
+                <Route path="reviews/moderation" element={<Navigate to="/admin/reviews" replace />} />
+                <Route path="admin/pets" element={<AdminPets />} />
+                <Route path="admin/reviews" element={<ReviewsModeration />} />
                 <Route path="admin/qr-export" element={<AdminQRExport />} />
                 <Route path="pricing" element={<Pricing />} />
                 <Route path="billing/success" element={<BillingSuccess />} />
