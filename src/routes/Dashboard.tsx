@@ -1,7 +1,8 @@
 // src/routes/Dashboard.tsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/auth/AuthProvider";
+import { useProfile } from "@/profile/useProfile";
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +35,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const ownerId = user?.id ?? null;
+  const { data: profile } = useProfile();
 
   const { data: pets, isLoading, isError } = useQuery({
     queryKey: ["pets", ownerId],
@@ -48,6 +50,18 @@ export default function Dashboard() {
   const [qrTarget, setQrTarget] = useState<PetRow | null>(null);
   const [missingTarget, setMissingTarget] = useState<PetRow | null>(null);
   const [togglingMissing, setTogglingMissing] = useState(false);
+  const [dismissedThisSession, setDismissedThisSession] = useState(false);
+
+  useEffect(() => {
+    if (!profile || !pets || isLoading || dismissedThisSession) return;
+
+    const hasNoPets = pets.length === 0;
+    const isFirstTime = profile.has_created_first_pet === false;
+
+    if (hasNoPets && isFirstTime && !addOpen) {
+      setAddOpen(true);
+    }
+  }, [profile, pets, isLoading, addOpen, dismissedThisSession]);
 
   const viewPetPage = (pet: PetRow) => {
     const baseUrl = window.location.origin;
@@ -57,8 +71,16 @@ export default function Dashboard() {
 
   const handleSaved = async () => {
     await qc.invalidateQueries({ queryKey: ["pets", ownerId] });
+    await qc.invalidateQueries({ queryKey: ["profile", ownerId] });
     setEditTarget(null);
     setAddOpen(false);
+  };
+
+  const handleAddDialogChange = (open: boolean) => {
+    setAddOpen(open);
+    if (!open && profile?.has_created_first_pet === false && (!pets || pets.length === 0)) {
+      setDismissedThisSession(true);
+    }
   };
 
   const handleDeleted = async () => {
@@ -120,6 +142,28 @@ export default function Dashboard() {
           Manage your pets, QR codes, and track activity
         </p>
       </div>
+
+      {dismissedThisSession && profile?.has_created_first_pet === false && (!pets || pets.length === 0) && (
+        <Alert className="border-primary/30 bg-primary/5 animate-in fade-in-50 slide-in-from-top-5">
+          <Sparkles className="h-4 w-4 text-primary" />
+          <AlertDescription className="flex items-center justify-between gap-4">
+            <span className="text-sm">
+              Ready to get started? Create your first pet profile to activate your QR tag
+            </span>
+            <Button
+              size="sm"
+              onClick={() => {
+                setDismissedThisSession(false);
+                setAddOpen(true);
+              }}
+              className="gap-2 shrink-0"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Add Pet
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
 
       <Tabs defaultValue="pets" className="space-y-4">
         <TabsList className="grid w-full max-w-2xl grid-cols-3">
@@ -333,7 +377,7 @@ export default function Dashboard() {
           <PetDialog
             mode="add"
             open={addOpen}
-            onOpenChange={setAddOpen}
+            onOpenChange={handleAddDialogChange}
             onSubmit={handleSaved}
           />
 

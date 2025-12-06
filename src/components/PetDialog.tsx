@@ -35,6 +35,7 @@ import { useAuth } from "@/auth/AuthProvider";
 import { createPet, updatePet, uploadPetPhoto } from "@/lib/pets";
 import { THEME_PRESETS } from "@/lib/themes";
 import { usePetTheme } from "@/hooks/usePetTheme";
+import { useProfile } from "@/profile/useProfile";
 import { cn } from "@/lib/utils";
 
 /* ---------------------------- Zod Schema ---------------------------- */
@@ -85,6 +86,7 @@ async function dataUrlToBlob(dataUrl: string) {
 export function PetDialog({ mode, open, onOpenChange, initialPet, onSubmit }: Props) {
   const { user } = useAuth();
   const [submitting, setSubmitting] = React.useState(false);
+  const { data: profile, update: updateProfile } = useProfile();
 
   const form = useForm<PetFormValues>({
     resolver: zodResolver(PetSchema),
@@ -208,6 +210,10 @@ export function PetDialog({ mode, open, onOpenChange, initialPet, onSubmit }: Pr
 
       if (row?.id) {
         await updatePetTheme(selectedTheme);
+      }
+
+      if (mode === "add" && profile?.has_created_first_pet === false) {
+        await updateProfile.mutateAsync({ has_created_first_pet: true });
       }
 
       onSubmit?.(values);
