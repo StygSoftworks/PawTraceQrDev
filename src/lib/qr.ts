@@ -1,7 +1,9 @@
 // src/lib/qr.ts
 import { supabase } from "@/lib/supabase";
-
+import { optimize } from 'svgo';
 export type QRShape = 'square' | 'round';
+
+
 
 // Constants for consistency
 const DEFAULT_QR_SIZE = 512;
@@ -43,6 +45,28 @@ const STYLED_QR_BASE_OPTIONS = {
   },
 };
 
+export async function flattenSvg(svgString: string): Promise<string> {
+const result = optimize(svgString, {
+    multipass: true,
+    plugins: [
+      'preset-default',
+      'convertTransform',
+      'mergePaths',
+      'convertShapeToPath', // Convert rect, circle, etc to paths
+      'convertPathData',     // Optimize path data
+      'collapseGroups',
+      'removeUselessStrokeAndFill',
+      {
+        name: 'removeAttrs',
+        params: {
+          attrs: ['class', 'data-.*'], // Remove unnecessary attributes
+        },
+      },
+    ],
+  });
+  
+  return result.data;
+}
 export async function makeQrDataUrl(text: string) {
   const QRCode = (await import("qrcode")).default;
   return await QRCode.toDataURL(text, {
@@ -163,7 +187,7 @@ export async function makeQrSvgWithText(
   </text>
 </svg>`.trim();
 
-  return wrappedSvg;
+  return await flattenSvg(wrappedSvg);
 }
 
 export async function makeRoundQrSvgWithText(
@@ -220,7 +244,7 @@ export async function makeRoundQrSvgWithText(
   </text>
 </svg>`.trim();
 
-  return wrappedSvg;
+  return await flattenSvg(wrappedSvg);
 }
 
 // Helper to escape XML special characters in text
