@@ -111,9 +111,9 @@ async function exportQrCodesToPdf(
 
     let svgContent: string;
     if (options.shape === "round") {
-      svgContent = await makeRoundQrSvgWithText(qrUrl, displayText);
+      svgContent = await makeRoundQrSvgWithText(qrUrl, displayText, 512, false);
     } else {
-      svgContent = await makeQrSvgWithText(qrUrl, displayText);
+      svgContent = await makeQrSvgWithText(qrUrl, displayText, 512, false);
     }
 
     const pdfBlob = await svgStringToPdf(svgContent, {

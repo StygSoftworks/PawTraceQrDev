@@ -171,7 +171,8 @@ export async function makeRoundQrDataUrl(text: string, size = DEFAULT_QR_SIZE): 
 export async function makeQrSvgWithText(
   qrText: string,
   displayText: string,
-  size = DEFAULT_QR_SIZE
+  size = DEFAULT_QR_SIZE,
+  flatten = true
 ): Promise<string> {
   const QRCode = (await import("qrcode")).default;
 
@@ -187,11 +188,11 @@ export async function makeQrSvgWithText(
   const parser = new DOMParser();
   const qrDoc = parser.parseFromString(qrSvg, "image/svg+xml");
   const qrSvgElement = qrDoc.documentElement;
-  
+
   // Get the original viewBox to maintain aspect ratio
   const viewBox = qrSvgElement.getAttribute("viewBox")?.split(" ").map(Number) || [0, 0, 100, 100];
   const [, , origWidth, origHeight] = viewBox;
-  
+
   const qrInner = qrSvgElement.innerHTML;
 
   const padding = DEFAULT_PADDING;
@@ -222,13 +223,14 @@ export async function makeQrSvgWithText(
   </text>
 </svg>`.trim();
 
-  return await flattenSvg(wrappedSvg);
+  return flatten ? await flattenSvg(wrappedSvg) : wrappedSvg;
 }
 
 export async function makeRoundQrSvgWithText(
   qrText: string,
   displayText: string,
-  size = DEFAULT_QR_SIZE
+  size = DEFAULT_QR_SIZE,
+  flatten = true
 ): Promise<string> {
   const QRCodeStyling = (await import("qr-code-styling")).default;
 
@@ -279,7 +281,7 @@ export async function makeRoundQrSvgWithText(
   </text>
 </svg>`.trim();
 
-  return await flattenSvg(wrappedSvg);
+  return flatten ? await flattenSvg(wrappedSvg) : wrappedSvg;
 }
 
 // Helper to escape XML special characters in text
