@@ -45,26 +45,61 @@ const STYLED_QR_BASE_OPTIONS = {
   },
 };
 
-export async function flattenSvg(svgString: string): Promise<string> {
-const result = optimize(svgString, {
-    multipass: true,
-    plugins: [
-      'preset-default',
-      'convertTransform',
-      'mergePaths',
-      'convertShapeToPath', // Convert rect, circle, etc to paths
-      'convertPathData',     // Optimize path data
-      'collapseGroups',
-      'removeUselessStrokeAndFill',
-      {
-        name: 'removeAttrs',
-        params: {
-          attrs: ['class', 'data-.*'], // Remove unnecessary attributes
+export async function flattenSvg(svgString: string, illustratorCompatible = true): Promise<string> {
+  const plugins: any[] = illustratorCompatible ? [
+    {
+      name: 'preset-default',
+      params: {
+        overrides: {
+          removeViewBox: false,
+          removeUnknownsAndDefaults: {
+            keepRoleAttr: true,
+          },
         },
       },
-    ],
+    },
+    { name: 'convertTransform' },
+    { name: 'convertShapeToPath' },
+    { name: 'convertPathData' },
+    { name: 'mergePaths' },
+    { name: 'collapseGroups' },
+    { name: 'removeUselessStrokeAndFill' },
+    {
+      name: 'removeAttrs',
+      params: {
+        attrs: ['class', 'data-.*'],
+      },
+    },
+    {
+      name: 'addAttributesToSVGElement',
+      params: {
+        attributes: [
+          { xmlns: 'http://www.w3.org/2000/svg' },
+          { version: '1.1' },
+        ],
+      },
+    },
+  ] : [
+    { name: 'preset-default' },
+    { name: 'convertTransform' },
+    { name: 'mergePaths' },
+    { name: 'convertShapeToPath' },
+    { name: 'convertPathData' },
+    { name: 'collapseGroups' },
+    { name: 'removeUselessStrokeAndFill' },
+    {
+      name: 'removeAttrs',
+      params: {
+        attrs: ['class', 'data-.*'],
+      },
+    },
+  ];
+
+  const result = optimize(svgString, {
+    multipass: true,
+    plugins,
   });
-  
+
   return result.data;
 }
 export async function makeQrDataUrl(text: string) {

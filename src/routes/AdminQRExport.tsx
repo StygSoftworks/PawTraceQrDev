@@ -7,7 +7,9 @@ import {
   fetchQrPoolStats,
   exportAndDownloadQrCodes,
   type ExportOptions,
+  type ExportFormat,
 } from "@/lib/admin-qr-export";
+import { type PageSize } from "@/lib/pdf-export";
 import { makeQrSvgWithText, makeRoundQrSvgWithText } from "@/lib/qr";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,7 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Download, Square, Circle, AlertCircle, CheckCircle } from "lucide-react";
+import { Download, Square, Circle, AlertCircle, CheckCircle, FileText } from "lucide-react";
 
 export default function AdminQRExport() {
   const { role, isAdmin, isLoading: roleLoading } = useAdminCheck();
@@ -25,6 +27,9 @@ export default function AdminQRExport() {
   const [shortcode, setShortcode] = useState("");
   const [batchSize, setBatchSize] = useState(10);
   const [previewSvg, setPreviewSvg] = useState<string | null>(null);
+  const [exportFormat, setExportFormat] = useState<ExportFormat>("svg");
+  const [pdfPageSize, setPdfPageSize] = useState<PageSize>("letter");
+  const [qrsPerPage, setQrsPerPage] = useState(1);
 
   const { data: stats } = useQuery({
     queryKey: ["qr-pool-stats"],
@@ -93,6 +98,9 @@ export default function AdminQRExport() {
         shape,
         tag_type: qrCode.tag_type as "dog" | "cat",
         shortcodes: [shortcode],
+        format: exportFormat,
+        pdfPageSize,
+        qrsPerPage: 1,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
@@ -106,6 +114,9 @@ export default function AdminQRExport() {
         shape,
         tag_type: tagType === "all" ? null : tagType,
         limit: batchSize,
+        format: exportFormat,
+        pdfPageSize,
+        qrsPerPage,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
@@ -209,6 +220,28 @@ export default function AdminQRExport() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
+                <Label>Export Format</Label>
+                <div className="flex gap-2">
+                  <Button
+                    variant={exportFormat === "svg" ? "default" : "outline"}
+                    onClick={() => setExportFormat("svg")}
+                    className="flex-1"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    SVG (ZIP)
+                  </Button>
+                  <Button
+                    variant={exportFormat === "pdf" ? "default" : "outline"}
+                    onClick={() => setExportFormat("pdf")}
+                    className="flex-1"
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    PDF
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
                 <Label>Shape</Label>
                 <div className="flex gap-2">
                   <Button
@@ -263,6 +296,44 @@ export default function AdminQRExport() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {exportFormat === "pdf" && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="pdf-page-size">PDF Page Size</Label>
+                    <Select
+                      value={pdfPageSize}
+                      onValueChange={(val) => setPdfPageSize(val as PageSize)}
+                    >
+                      <SelectTrigger id="pdf-page-size">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="letter">Letter (8.5 × 11 in)</SelectItem>
+                        <SelectItem value="a4">A4 (210 × 297 mm)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="qrs-per-page">QR Codes Per Page</Label>
+                    <Select
+                      value={String(qrsPerPage)}
+                      onValueChange={(val) => setQrsPerPage(Number(val))}
+                    >
+                      <SelectTrigger id="qrs-per-page">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">1 per page</SelectItem>
+                        <SelectItem value="2">2 per page</SelectItem>
+                        <SelectItem value="4">4 per page</SelectItem>
+                        <SelectItem value="6">6 per page</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
 
               <div className="pt-4">
                 <Button
@@ -349,10 +420,15 @@ export default function AdminQRExport() {
                   <strong>Text Position:</strong> {shape === "square" ? "Flat below QR code" : "Curved along bottom"}
                 </p>
                 <p>
-                  <strong>Format:</strong> SVG (scalable vector graphics)
+                  <strong>Format:</strong> {exportFormat === "pdf" ? `PDF (${pdfPageSize.toUpperCase()})` : "SVG ZIP (Illustrator compatible)"}
                 </p>
+                {exportFormat === "pdf" && (
+                  <p>
+                    <strong>Layout:</strong> {qrsPerPage} QR code{qrsPerPage > 1 ? "s" : ""} per page
+                  </p>
+                )}
                 <p>
-                  <strong>Naming:</strong> {tagType === "all" ? "dog/cat" : tagType}-shortcode.svg
+                  <strong>Naming:</strong> {tagType === "all" ? "dog/cat" : tagType}-shortcode.{exportFormat === "pdf" ? "pdf" : "svg"}
                 </p>
               </div>
             </CardContent>

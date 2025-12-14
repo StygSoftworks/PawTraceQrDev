@@ -11,8 +11,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { QrCode, Copy, Download, RefreshCw, Square, Circle } from "lucide-react";
+import { QrCode, Copy, Download, RefreshCw, Square, Circle, FileText } from "lucide-react";
 import { makeQrSvgString, makeRoundQrSvgString, makeRoundQrDataUrl, type QRShape } from "@/lib/qr";
+import { svgStringToPdf, downloadPdfBlob, type PageSize } from "@/lib/pdf-export";
 import type { PetRow } from "@/lib/pets";
 import {
   Select,
@@ -36,11 +37,18 @@ const PNG_SIZES = [
   { label: "Extra Large (2048px)", value: "2048" },
 ];
 
+const PDF_SIZES = [
+  { label: "Letter (8.5 × 11 in)", value: "letter" },
+  { label: "A4 (210 × 297 mm)", value: "a4" },
+];
+
 export function QRCodeDialog({ pet, open, onOpenChange }: QRCodeDialogProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [svgPreview, setSvgPreview] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState("512");
   const [qrShape, setQrShape] = useState<QRShape>("square");
+  const [pdfPageSize, setPdfPageSize] = useState<PageSize>("letter");
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
 
   useEffect(() => {
     if (open && pet?.short_id) {
@@ -117,6 +125,31 @@ export function QRCodeDialog({ pet, open, onOpenChange }: QRCodeDialogProps) {
       URL.revokeObjectURL(url);
     } catch (e) {
       alert("Failed to generate SVG");
+    }
+  };
+
+  const downloadQRPdf = async () => {
+    if (!pet?.short_id) return;
+    setIsExportingPdf(true);
+    try {
+      const qrTarget = `https://www.pawtraceqr.com/p/${pet.short_id}`;
+      const generateFn = qrShape === "round" ? makeRoundQrSvgString : makeQrSvgString;
+      const svgString = await generateFn(qrTarget);
+
+      const pdfBlob = await svgStringToPdf(svgString, {
+        pageSize: pdfPageSize,
+        orientation: "portrait",
+        title: `${pet.name} QR Code`,
+        author: "PawTrace QR",
+      });
+
+      const timestamp = new Date().toISOString().split('T')[0];
+      downloadPdfBlob(pdfBlob, `${pet.name}-qr-${qrShape}-${timestamp}.pdf`);
+    } catch (e) {
+      console.error("PDF generation error:", e);
+      alert("Failed to generate PDF");
+    } finally {
+      setIsExportingPdf(false);
     }
   };
 
@@ -223,7 +256,7 @@ export function QRCodeDialog({ pet, open, onOpenChange }: QRCodeDialogProps) {
                     className="w-full gap-2 border-2"
                   >
                     <Download className="h-4 w-4" />
-                    Download SVG (Vector)
+                    Download SVG (Illustrator Compatible)
                   </Button>
 
                   <div className="flex gap-2">
@@ -246,6 +279,31 @@ export function QRCodeDialog({ pet, open, onOpenChange }: QRCodeDialogProps) {
                     >
                       <Download className="h-4 w-4" />
                       Download PNG
+                    </Button>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Select value={pdfPageSize} onValueChange={(val) => setPdfPageSize(val as PageSize)}>
+                      <SelectTrigger className="flex-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PDF_SIZES.map((size) => (
+                          <SelectItem key={size.value} value={size.value}>
+                            {size.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      type="button"
+                      onClick={downloadQRPdf}
+                      disabled={isExportingPdf}
+                      variant="outline"
+                      className="gap-2 border-2"
+                    >
+                      <FileText className="h-4 w-4" />
+                      {isExportingPdf ? "Generating..." : "Download PDF"}
                     </Button>
                   </div>
                 </div>

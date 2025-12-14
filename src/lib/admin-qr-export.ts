@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { makeQrSvgWithText, makeRoundQrSvgWithText } from "@/lib/qr";
+import { multipleQrsToPdf, type PageSize } from "@/lib/pdf-export";
 import JSZip from "jszip";
 
 export interface QRCodeRecord {
@@ -21,11 +22,16 @@ export interface QRPoolStats {
   cat_percentage: number;
 }
 
+export type ExportFormat = "svg" | "pdf";
+
 export interface ExportOptions {
   shape: "square" | "round";
   tag_type?: "dog" | "cat" | null;
   shortcodes?: string[];
   limit?: number;
+  format?: ExportFormat;
+  pdfPageSize?: PageSize;
+  qrsPerPage?: number;
 }
 
 export async function fetchAvailableQrCodes(
@@ -83,6 +89,52 @@ export async function exportQrCodes(options: ExportOptions): Promise<Blob> {
     throw new Error("No QR codes found matching criteria");
   }
 
+  const format = options.format || "svg";
+
+  if (format === "pdf") {
+    return await exportQrCodesToPdf(qrCodes, options);
+  } else {
+    return await exportQrCodesToSvgZip(qrCodes, options);
+  }
+}
+
+async function exportQrCodesToPdf(
+  qrCodes: QRCodeRecord[],
+  options: ExportOptions
+): Promise<Blob> {
+  const baseUrl = "https://www.pawtraceqr.com/p/";
+  const qrData = [];
+
+  for (const qr of qrCodes) {
+    const qrUrl = `${baseUrl}${qr.short_id}`;
+    const displayText = `pawtraceqr.com/p/${qr.short_id}`;
+
+    let svgContent: string;
+    if (options.shape === "round") {
+      svgContent = await makeRoundQrSvgWithText(qrUrl, displayText);
+    } else {
+      svgContent = await makeQrSvgWithText(qrUrl, displayText);
+    }
+
+    qrData.push({
+      svgString: svgContent,
+      label: `${qr.tag_type.toUpperCase()}: ${qr.short_id}`,
+    });
+  }
+
+  return await multipleQrsToPdf(qrData, {
+    pageSize: options.pdfPageSize || "letter",
+    orientation: "portrait",
+    qrsPerPage: options.qrsPerPage || 1,
+    title: "QR Codes Batch Export",
+    author: "PawTrace QR Admin",
+  });
+}
+
+async function exportQrCodesToSvgZip(
+  qrCodes: QRCodeRecord[],
+  options: ExportOptions
+): Promise<Blob> {
   const zip = new JSZip();
   const baseUrl = "https://www.pawtraceqr.com/p/";
 
@@ -105,8 +157,9 @@ export async function exportQrCodes(options: ExportOptions): Promise<Blob> {
     exported_at: new Date().toISOString(),
     shape: options.shape,
     tag_type: options.tag_type || "all",
+    format: "svg",
     count: qrCodes.length,
-    codes: qrCodes.map(qr => ({
+    codes: qrCodes.map((qr) => ({
       short_id: qr.short_id,
       tag_type: qr.tag_type,
       filename: `${qr.tag_type}-${qr.short_id}.svg`,
@@ -133,6 +186,8 @@ export async function exportAndDownloadQrCodes(options: ExportOptions): Promise<
   const blob = await exportQrCodes(options);
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, -5);
   const tagTypeStr = options.tag_type || "all";
-  const filename = `qr-codes-${options.shape}-${tagTypeStr}-${timestamp}.zip`;
+  const format = options.format || "svg";
+  const extension = format === "pdf" ? "pdf" : "zip";
+  const filename = `qr-codes-${options.shape}-${tagTypeStr}-${timestamp}.${extension}`;
   downloadBlob(blob, filename);
 }
