@@ -121,6 +121,7 @@ async function exportQrCodesToPdf(
       orientation: "portrait",
       title: `${qr.tag_type.toUpperCase()} QR Code - ${qr.short_id}`,
       author: "PawTrace QR Admin",
+      targetWidth: 144,
     });
 
     const filename = `${qr.tag_type}-${qr.short_id}.pdf`;

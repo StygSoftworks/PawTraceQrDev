@@ -12,6 +12,7 @@ export interface PDFOptions {
   margin?: number;
   title?: string;
   author?: string;
+  targetWidth?: number;
 }
 
 const PAGE_SIZES = {
@@ -54,6 +55,7 @@ export async function svgStringToPdf(
     margin = 36,
     title = "QR Code",
     author = "PawTrace QR",
+    targetWidth,
   } = options;
 
   const { width: pageWidth, height: pageHeight } = getPageDimensions(
@@ -87,14 +89,31 @@ export async function svgStringToPdf(
   const availableWidth = pageWidth - margin * 2;
   const availableHeight = pageHeight - margin * 2;
 
-  const scale = Math.min(
-    availableWidth / svgWidth,
-    availableHeight / svgHeight,
-    1
-  );
+  let scaledWidth: number;
+  let scaledHeight: number;
 
-  const scaledWidth = svgWidth * scale;
-  const scaledHeight = svgHeight * scale;
+  if (targetWidth) {
+    const scale = targetWidth / svgWidth;
+    scaledWidth = svgWidth * scale;
+    scaledHeight = svgHeight * scale;
+
+    if (scaledWidth > availableWidth || scaledHeight > availableHeight) {
+      const constrainedScale = Math.min(
+        availableWidth / svgWidth,
+        availableHeight / svgHeight
+      );
+      scaledWidth = svgWidth * constrainedScale;
+      scaledHeight = svgHeight * constrainedScale;
+    }
+  } else {
+    const scale = Math.min(
+      availableWidth / svgWidth,
+      availableHeight / svgHeight,
+      1
+    );
+    scaledWidth = svgWidth * scale;
+    scaledHeight = svgHeight * scale;
+  }
 
   const x = (pageWidth - scaledWidth) / 2;
   const y = (pageHeight - scaledHeight) / 2;
