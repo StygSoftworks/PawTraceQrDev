@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { makeQrSvgWithText, makeRoundQrSvgWithText } from "@/lib/qr";
-import { multipleQrsToPdf, type PageSize } from "@/lib/pdf-export";
+import { svgStringToPdf, type PageSize } from "@/lib/pdf-export";
 import JSZip from "jszip";
 
 export interface QRCodeRecord {
@@ -103,7 +103,7 @@ async function exportQrCodesToPdf(
   options: ExportOptions
 ): Promise<Blob> {
   const baseUrl = "https://www.pawtraceqr.com/p/";
-  const qrData = [];
+  const zip = new JSZip();
 
   for (const qr of qrCodes) {
     const qrUrl = `${baseUrl}${qr.short_id}`;
@@ -116,19 +116,34 @@ async function exportQrCodesToPdf(
       svgContent = await makeQrSvgWithText(qrUrl, displayText);
     }
 
-    qrData.push({
-      svgString: svgContent,
-      label: `${qr.tag_type.toUpperCase()}: ${qr.short_id}`,
+    const pdfBlob = await svgStringToPdf(svgContent, {
+      pageSize: options.pdfPageSize || "letter",
+      orientation: "portrait",
+      title: `${qr.tag_type.toUpperCase()} QR Code - ${qr.short_id}`,
+      author: "PawTrace QR Admin",
     });
+
+    const filename = `${qr.tag_type}-${qr.short_id}.pdf`;
+    zip.file(filename, pdfBlob);
   }
 
-  return await multipleQrsToPdf(qrData, {
-    pageSize: options.pdfPageSize || "letter",
-    orientation: "portrait",
-    qrsPerPage: options.qrsPerPage || 1,
-    title: "QR Codes Batch Export",
-    author: "PawTrace QR Admin",
-  });
+  const manifest = {
+    exported_at: new Date().toISOString(),
+    shape: options.shape,
+    tag_type: options.tag_type || "all",
+    format: "pdf",
+    page_size: options.pdfPageSize || "letter",
+    count: qrCodes.length,
+    codes: qrCodes.map((qr) => ({
+      short_id: qr.short_id,
+      tag_type: qr.tag_type,
+      filename: `${qr.tag_type}-${qr.short_id}.pdf`,
+    })),
+  };
+
+  zip.file("manifest.json", JSON.stringify(manifest, null, 2));
+
+  return await zip.generateAsync({ type: "blob" });
 }
 
 async function exportQrCodesToSvgZip(
@@ -186,8 +201,6 @@ export async function exportAndDownloadQrCodes(options: ExportOptions): Promise<
   const blob = await exportQrCodes(options);
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, -5);
   const tagTypeStr = options.tag_type || "all";
-  const format = options.format || "svg";
-  const extension = format === "pdf" ? "pdf" : "zip";
-  const filename = `qr-codes-${options.shape}-${tagTypeStr}-${timestamp}.${extension}`;
+  const filename = `qr-codes-${options.shape}-${tagTypeStr}-${timestamp}.zip`;
   downloadBlob(blob, filename);
 }

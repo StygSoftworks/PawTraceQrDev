@@ -29,7 +29,6 @@ export default function AdminQRExport() {
   const [previewSvg, setPreviewSvg] = useState<string | null>(null);
   const [exportFormat, setExportFormat] = useState<ExportFormat>("svg");
   const [pdfPageSize, setPdfPageSize] = useState<PageSize>("letter");
-  const [qrsPerPage, setQrsPerPage] = useState(1);
 
   const { data: stats } = useQuery({
     queryKey: ["qr-pool-stats"],
@@ -100,7 +99,6 @@ export default function AdminQRExport() {
         shortcodes: [shortcode],
         format: exportFormat,
         pdfPageSize,
-        qrsPerPage: 1,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
@@ -116,7 +114,6 @@ export default function AdminQRExport() {
         limit: batchSize,
         format: exportFormat,
         pdfPageSize,
-        qrsPerPage,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
@@ -298,41 +295,21 @@ export default function AdminQRExport() {
               </div>
 
               {exportFormat === "pdf" && (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="pdf-page-size">PDF Page Size</Label>
-                    <Select
-                      value={pdfPageSize}
-                      onValueChange={(val) => setPdfPageSize(val as PageSize)}
-                    >
-                      <SelectTrigger id="pdf-page-size">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="letter">Letter (8.5 × 11 in)</SelectItem>
-                        <SelectItem value="a4">A4 (210 × 297 mm)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="qrs-per-page">QR Codes Per Page</Label>
-                    <Select
-                      value={String(qrsPerPage)}
-                      onValueChange={(val) => setQrsPerPage(Number(val))}
-                    >
-                      <SelectTrigger id="qrs-per-page">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">1 per page</SelectItem>
-                        <SelectItem value="2">2 per page</SelectItem>
-                        <SelectItem value="4">4 per page</SelectItem>
-                        <SelectItem value="6">6 per page</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </>
+                <div className="space-y-2">
+                  <Label htmlFor="pdf-page-size">PDF Page Size</Label>
+                  <Select
+                    value={pdfPageSize}
+                    onValueChange={(val) => setPdfPageSize(val as PageSize)}
+                  >
+                    <SelectTrigger id="pdf-page-size">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="letter">Letter (8.5 × 11 in)</SelectItem>
+                      <SelectItem value="a4">A4 (210 × 297 mm)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               )}
 
               <div className="pt-4">
@@ -420,13 +397,11 @@ export default function AdminQRExport() {
                   <strong>Text Position:</strong> {shape === "square" ? "Flat below QR code" : "Curved along bottom"}
                 </p>
                 <p>
-                  <strong>Format:</strong> {exportFormat === "pdf" ? `PDF (${pdfPageSize.toUpperCase()})` : "SVG ZIP (Illustrator compatible)"}
+                  <strong>Format:</strong> {exportFormat === "pdf" ? `PDF ZIP (${pdfPageSize.toUpperCase()})` : "SVG ZIP (Illustrator compatible)"}
                 </p>
-                {exportFormat === "pdf" && (
-                  <p>
-                    <strong>Layout:</strong> {qrsPerPage} QR code{qrsPerPage > 1 ? "s" : ""} per page
-                  </p>
-                )}
+                <p>
+                  <strong>Files:</strong> {exportFormat === "pdf" ? "Individual PDF per QR code" : "Individual SVG per QR code"}
+                </p>
                 <p>
                   <strong>Naming:</strong> {tagType === "all" ? "dog/cat" : tagType}-shortcode.{exportFormat === "pdf" ? "pdf" : "svg"}
                 </p>
