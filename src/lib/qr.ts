@@ -11,7 +11,7 @@ const DEFAULT_QR_SIZE = 512;
 const DEFAULT_PADDING = 30;
 const DEFAULT_TEXT_HEIGHT = 40;
 const DEFAULT_FONT_SIZE = 24;
-const TEXT_RADIUS_OFFSET = 25;
+const TEXT_RADIUS_OFFSET = 15;
 
 // Common QR options
 const QR_BASE_OPTIONS = {

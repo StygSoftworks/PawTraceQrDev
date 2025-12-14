@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { QrCode, Copy, Download, RefreshCw, Square, Circle, FileText } from "lucide-react";
-import { makeQrSvgString, makeRoundQrSvgString, makeRoundQrDataUrl, type QRShape } from "@/lib/qr";
+import { makeQrSvgWithText, makeRoundQrSvgWithText, type QRShape } from "@/lib/qr";
 import { svgStringToPdf, downloadPdfBlob, type PageSize } from "@/lib/pdf-export";
 import type { PetRow } from "@/lib/pets";
 import {
@@ -54,10 +54,11 @@ export function QRCodeDialog({ pet, open, onOpenChange }: QRCodeDialogProps) {
     if (open && pet?.short_id) {
       setIsGenerating(true);
       const qrTarget = `https://www.pawtraceqr.com/p/${pet.short_id}`;
+      const displayText = `pawtraceqr.com/p/${pet.short_id}`;
 
-      const generateFn = qrShape === "round" ? makeRoundQrSvgString : makeQrSvgString;
+      const generateFn = qrShape === "round" ? makeRoundQrSvgWithText : makeQrSvgWithText;
 
-      generateFn(qrTarget)
+      generateFn(qrTarget, displayText, 512, false)
         .then((svgStr) => {
           const svgDataUrl = `data:image/svg+xml;base64,${btoa(svgStr)}`;
           setSvgPreview(svgDataUrl);
@@ -87,20 +88,42 @@ export function QRCodeDialog({ pet, open, onOpenChange }: QRCodeDialogProps) {
     if (!pet?.short_id) return;
     try {
       const qrTarget = `https://www.pawtraceqr.com/p/${pet.short_id}`;
-      let dataUrl: string;
+      const displayText = `pawtraceqr.com/p/${pet.short_id}`;
+      const sizeNum = parseInt(size);
 
-      if (qrShape === "round") {
-        dataUrl = await makeRoundQrDataUrl(qrTarget, parseInt(size));
-      } else {
-        const QRCode = (await import("qrcode")).default;
-        dataUrl = await QRCode.toDataURL(qrTarget, {
-          errorCorrectionLevel: "M",
-          margin: 1,
-          width: parseInt(size),
-          color: { dark: "#000000", light: "#ffffff" },
-        });
-      }
+      const generateFn = qrShape === "round" ? makeRoundQrSvgWithText : makeQrSvgWithText;
+      const svgString = await generateFn(qrTarget, displayText, sizeNum, false);
 
+      const img = new Image();
+      const svgBlob = new Blob([svgString], { type: "image/svg+xml" });
+      const svgUrl = URL.createObjectURL(svgBlob);
+
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error("Failed to load SVG"));
+        img.src = svgUrl;
+      });
+
+      const parser = new DOMParser();
+      const svgDoc = parser.parseFromString(svgString, "image/svg+xml");
+      const svgElement = svgDoc.documentElement;
+      const svgWidth = parseFloat(svgElement.getAttribute("width") || String(sizeNum));
+      const svgHeight = parseFloat(svgElement.getAttribute("height") || String(sizeNum));
+      const scale = sizeNum / Math.max(svgWidth, svgHeight);
+
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(svgWidth * scale);
+      canvas.height = Math.round(svgHeight * scale);
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("Canvas context unavailable");
+
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      URL.revokeObjectURL(svgUrl);
+
+      const dataUrl = canvas.toDataURL("image/png");
       const a = document.createElement("a");
       a.href = dataUrl;
       a.download = `${pet.name}-qr-${qrShape}-${size}px.png`;
@@ -114,8 +137,9 @@ export function QRCodeDialog({ pet, open, onOpenChange }: QRCodeDialogProps) {
     if (!pet?.short_id) return;
     try {
       const qrTarget = `https://www.pawtraceqr.com/p/${pet.short_id}`;
-      const generateFn = qrShape === "round" ? makeRoundQrSvgString : makeQrSvgString;
-      const svgString = await generateFn(qrTarget);
+      const displayText = `pawtraceqr.com/p/${pet.short_id}`;
+      const generateFn = qrShape === "round" ? makeRoundQrSvgWithText : makeQrSvgWithText;
+      const svgString = await generateFn(qrTarget, displayText);
       const blob = new Blob([svgString], { type: "image/svg+xml" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -133,8 +157,9 @@ export function QRCodeDialog({ pet, open, onOpenChange }: QRCodeDialogProps) {
     setIsExportingPdf(true);
     try {
       const qrTarget = `https://www.pawtraceqr.com/p/${pet.short_id}`;
-      const generateFn = qrShape === "round" ? makeRoundQrSvgString : makeQrSvgString;
-      const svgString = await generateFn(qrTarget);
+      const displayText = `pawtraceqr.com/p/${pet.short_id}`;
+      const generateFn = qrShape === "round" ? makeRoundQrSvgWithText : makeQrSvgWithText;
+      const svgString = await generateFn(qrTarget, displayText);
 
       const pdfBlob = await svgStringToPdf(svgString, {
         pageSize: pdfPageSize,
