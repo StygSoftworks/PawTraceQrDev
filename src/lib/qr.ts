@@ -1,6 +1,7 @@
 // src/lib/qr.ts
 import { supabase } from "@/lib/supabase";
 import { optimize } from 'svgo';
+import { textToPathOnArc, textToPath } from "./text-to-path";
 export type QRShape = 'square' | 'round';
 
 
@@ -176,20 +177,15 @@ export async function makeQrSvgWithText(
 ): Promise<string> {
   const QRCode = (await import("qrcode")).default;
 
-  // Generate QR with proper scale to achieve desired size
-  // The scale parameter determines module size, not total size
-  // We'll generate at a fixed scale and then scale the SVG
   const qrSvg = await QRCode.toString(qrText, {
     ...QR_BASE_OPTIONS,
     type: "svg",
   });
 
-  // Parse and extract the QR path data
   const parser = new DOMParser();
   const qrDoc = parser.parseFromString(qrSvg, "image/svg+xml");
   const qrSvgElement = qrDoc.documentElement;
 
-  // Get the original viewBox to maintain aspect ratio
   const viewBox = qrSvgElement.getAttribute("viewBox")?.split(" ").map(Number) || [0, 0, 100, 100];
   const [, , origWidth, origHeight] = viewBox;
 
@@ -200,27 +196,25 @@ export async function makeQrSvgWithText(
   const totalWidth = size + padding * 2;
   const totalHeight = size + padding * 2 + textHeight;
 
-  // Calculate scale to fit QR into desired size
   const scaleX = size / origWidth;
   const scaleY = size / origHeight;
 
+  const textPathData = await textToPath({
+    text: displayText,
+    x: totalWidth / 2,
+    y: size + padding + textHeight * 0.7,
+    fontSize: DEFAULT_FONT_SIZE,
+    fill: "#000000",
+    textAnchor: "middle",
+  });
+
   const wrappedSvg = `
-<svg xmlns="http://www.w3.org/2000/svg" width="${totalWidth}" height="${totalHeight}" viewBox="0 0 ${totalWidth} ${totalHeight}">
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="${totalWidth}" height="${totalHeight}" viewBox="0 0 ${totalWidth} ${totalHeight}">
   <rect width="${totalWidth}" height="${totalHeight}" fill="#ffffff"/>
   <g transform="translate(${padding}, ${padding}) scale(${scaleX}, ${scaleY})">
     ${qrInner}
   </g>
-  <text
-    x="${totalWidth / 2}"
-    y="${size + padding + textHeight * 0.7}"
-    font-family="system-ui, -apple-system, sans-serif"
-    font-size="${DEFAULT_FONT_SIZE}"
-    font-weight="600"
-    fill="#000000"
-    text-anchor="middle"
-  >
-    ${escapeXml(displayText)}
-  </text>
+  ${textPathData}
 </svg>`.trim();
 
   return flatten ? await flattenSvg(wrappedSvg) : wrappedSvg;
@@ -255,43 +249,30 @@ export async function makeRoundQrSvgWithText(
   const centerX = totalSize / 2;
   const centerY = totalSize / 2;
   const textRadius = size / 2 + TEXT_RADIUS_OFFSET;
-  const pathId = `textPath_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 
-  // Top arc for curved text
-  const pathD = `M ${centerX - textRadius},${centerY} A ${textRadius},${textRadius} 0 0 0 ${centerX + textRadius},${centerY}`;
+  const curvedTextPaths = await textToPathOnArc({
+    text: displayText,
+    centerX,
+    centerY,
+    radius: textRadius,
+    fontSize: DEFAULT_FONT_SIZE,
+    startAngle: Math.PI,
+    endAngle: 0,
+    fill: "#000000",
+  });
 
   const wrappedSvg = `
-<svg xmlns="http://www.w3.org/2000/svg" width="${totalSize}" height="${totalSize}" viewBox="0 0 ${totalSize} ${totalSize}">
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="${totalSize}" height="${totalSize}" viewBox="0 0 ${totalSize} ${totalSize}">
   <rect width="${totalSize}" height="${totalSize}" fill="#ffffff"/>
   <g transform="translate(${padding}, ${padding})">
     ${qrInner}
   </g>
-  <defs>
-    <path id="${pathId}" d="${pathD}" fill="none" />
-  </defs>
-  <text
-    font-family="system-ui, -apple-system, sans-serif"
-    font-size="${DEFAULT_FONT_SIZE}"
-    font-weight="600"
-    fill="#000000"
-  >
-    <textPath href="#${pathId}" startOffset="50%" text-anchor="middle">
-      ${escapeXml(displayText)}
-    </textPath>
-  </text>
+  <g>
+    ${curvedTextPaths}
+  </g>
 </svg>`.trim();
 
   return flatten ? await flattenSvg(wrappedSvg) : wrappedSvg;
-}
-
-// Helper to escape XML special characters in text
-function escapeXml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
 }
 
 // Convert a data URL to a Blob object
