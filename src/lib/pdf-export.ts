@@ -1,6 +1,3 @@
-import { jsPDF } from "jspdf";
-import "svg2pdf.js";
-
 export type PageSize = "letter" | "a4" | "custom";
 export type PageOrientation = "portrait" | "landscape";
 
@@ -43,6 +40,14 @@ function getPageDimensions(
   return dimensions;
 }
 
+async function loadJsPDF() {
+  const [{ jsPDF }, _svg2pdf] = await Promise.all([
+    import("jspdf"),
+    import("svg2pdf.js"),
+  ]);
+  return jsPDF;
+}
+
 export async function svgStringToPdf(
   svgString: string,
   options: PDFOptions = {}
@@ -65,6 +70,7 @@ export async function svgStringToPdf(
     customHeight
   );
 
+  const jsPDF = await loadJsPDF();
   const doc = new jsPDF({
     orientation: orientation === "portrait" ? "p" : "l",
     unit: "pt",
@@ -150,6 +156,7 @@ export async function multipleQrsToPdf(
     customHeight
   );
 
+  const jsPDF = await loadJsPDF();
   const doc = new jsPDF({
     orientation: orientation === "portrait" ? "p" : "l",
     unit: "pt",

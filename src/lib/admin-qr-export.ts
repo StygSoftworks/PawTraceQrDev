@@ -1,7 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { makeQrSvgWithText, makeRoundQrSvgWithText } from "@/lib/qr";
-import { svgStringToPdf, type PageSize } from "@/lib/pdf-export";
-import JSZip from "jszip";
+import type { PageSize } from "@/lib/pdf-export";
 
 export interface QRCodeRecord {
   id: string;
@@ -82,6 +81,11 @@ async function fetchQrCodesForExport(options: ExportOptions): Promise<QRCodeReco
   }
 }
 
+async function loadJSZip() {
+  const JSZip = (await import("jszip")).default;
+  return JSZip;
+}
+
 export async function exportQrCodes(options: ExportOptions): Promise<Blob> {
   const qrCodes = await fetchQrCodesForExport(options);
 
@@ -102,6 +106,11 @@ async function exportQrCodesToPdf(
   qrCodes: QRCodeRecord[],
   options: ExportOptions
 ): Promise<Blob> {
+  const [JSZip, { svgStringToPdf }] = await Promise.all([
+    loadJSZip(),
+    import("@/lib/pdf-export"),
+  ]);
+
   const baseUrl = "https://www.pawtraceqr.com/p/";
   const zip = new JSZip();
 
@@ -151,6 +160,7 @@ async function exportQrCodesToSvgZip(
   qrCodes: QRCodeRecord[],
   options: ExportOptions
 ): Promise<Blob> {
+  const JSZip = await loadJSZip();
   const zip = new JSZip();
   const baseUrl = "https://www.pawtraceqr.com/p/";
 

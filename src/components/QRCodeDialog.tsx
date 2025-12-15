@@ -1,4 +1,3 @@
-// src/components/QRCodeDialog.tsx
 import { useState, useEffect } from "react";
 import {
   Dialog,
@@ -13,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { QrCode, Copy, Download, RefreshCw, Square, Circle, FileText } from "lucide-react";
 import { makeQrSvgWithText, makeRoundQrSvgWithText, type QRShape } from "@/lib/qr";
-import { svgStringToPdf, downloadPdfBlob, type PageSize } from "@/lib/pdf-export";
+import type { PageSize } from "@/lib/pdf-export";
 import type { PetRow } from "@/lib/pets";
 import {
   Select,
@@ -161,6 +160,7 @@ export function QRCodeDialog({ pet, open, onOpenChange }: QRCodeDialogProps) {
       const generateFn = qrShape === "round" ? makeRoundQrSvgWithText : makeQrSvgWithText;
       const svgString = await generateFn(qrTarget, displayText);
 
+      const { svgStringToPdf, downloadPdfBlob } = await import("@/lib/pdf-export");
       const pdfBlob = await svgStringToPdf(svgString, {
         pageSize: pdfPageSize,
         orientation: "portrait",

@@ -1,6 +1,4 @@
-// src/lib/qr.ts
 import { supabase } from "@/lib/supabase";
-import { optimize } from 'svgo';
 import { textToPathOnArc, textToPath } from "./text-to-path";
 export type QRShape = 'square' | 'round';
 
@@ -47,6 +45,8 @@ const STYLED_QR_BASE_OPTIONS = {
 };
 
 export async function flattenSvg(svgString: string, illustratorCompatible = true): Promise<string> {
+  const { optimize } = await import('svgo');
+
   const plugins: any[] = illustratorCompatible ? [
     {
       name: 'preset-default',

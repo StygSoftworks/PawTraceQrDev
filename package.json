@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && powershell -Command \"Copy-Item dist/index.html dist/404.html\"",
+    "build": "tsc -b && vite build && shx cp dist/index.html dist/404.html",
     "lint": "eslint .",
     "preview": "vite preview",
     "gen:images": "node scripts/generate-images.mjs src/assets/hero/*.{jpg,jpeg,png}"

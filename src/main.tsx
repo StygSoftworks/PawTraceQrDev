@@ -29,7 +29,14 @@ import { AuthProvider } from "./auth/AuthProvider";
 import { ThemeProvider } from "./components/ThemeProvider";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+
+const ReactQueryDevtools = import.meta.env.DEV
+  ? lazy(() =>
+      import("@tanstack/react-query-devtools").then((mod) => ({
+        default: mod.ReactQueryDevtools,
+      }))
+    )
+  : () => null;
 
 const queryClient = new QueryClient({
   defaultOptions: {
