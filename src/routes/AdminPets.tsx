@@ -1,7 +1,7 @@
-import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useMemo, useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
-import { getAllPetsAdmin, type AdminPetRow } from "@/lib/admin";
+import { getAllPetsAdmin, lookupQRCode, type AdminPetRow, type QRCodeLookupResult } from "@/lib/admin";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,23 +9,63 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { QRCodeDialog } from "@/components/QRCodeDialog";
+import { ReassignQRDialog } from "@/components/ReassignQRDialog";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
-  Search, Eye, QrCode, PawPrint, AlertCircle,
-  ChevronDown, ChevronUp, Dog, Cat, Home, Trees, Mountain
+  Search, Eye, QrCode, PawPrint, AlertCircle, ArrowLeftRight, Loader2,
+  ChevronDown, ChevronUp, Dog, Cat, Home, Trees, Mountain, ExternalLink, CheckCircle
 } from "lucide-react";
 import { format } from "date-fns";
 import { getSubscriptionBadgeVariant } from "@/config/billing";
 import type { PetRow } from "@/lib/pets";
 
+function debounce<T extends (...args: Parameters<T>) => void>(fn: T, ms: number) {
+  let timer: ReturnType<typeof setTimeout>;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), ms);
+  };
+}
+
 export default function AdminPets() {
   const { isAdmin, isLoading: roleLoading } = useAdminCheck();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [speciesFilter, setSpeciesFilter] = useState<string>("all");
   const [tagTypeFilter, setTagTypeFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [qrTarget, setQrTarget] = useState<PetRow | null>(null);
+  const [reassignTarget, setReassignTarget] = useState<AdminPetRow | null>(null);
+
+  const [lookupShortId, setLookupShortId] = useState("");
+  const [lookupResult, setLookupResult] = useState<QRCodeLookupResult | null | "not_found" | "loading">(null);
+  const [lookupError, setLookupError] = useState<string | null>(null);
+
+  const debouncedLookup = useCallback(
+    debounce(async (shortId: string) => {
+      if (!shortId.trim()) {
+        setLookupResult(null);
+        setLookupError(null);
+        return;
+      }
+      setLookupResult("loading");
+      setLookupError(null);
+      try {
+        const result = await lookupQRCode(shortId.trim());
+        if (result) {
+          setLookupResult(result);
+        } else {
+          setLookupResult("not_found");
+        }
+      } catch (e: unknown) {
+        setLookupError(e instanceof Error ? e.message : "Failed to lookup");
+        setLookupResult(null);
+      }
+    }, 400),
+    []
+  );
 
   const { data: pets, isLoading, isError } = useQuery({
     queryKey: ["admin-all-pets"],
@@ -33,6 +73,22 @@ export default function AdminPets() {
     enabled: isAdmin,
     staleTime: 30_000,
   });
+
+  const handleLookupChange = (value: string) => {
+    setLookupShortId(value);
+    debouncedLookup(value);
+  };
+
+  const handleReassigned = () => {
+    queryClient.invalidateQueries({ queryKey: ["admin-all-pets"] });
+  };
+
+  const viewLookupPet = () => {
+    if (lookupResult && typeof lookupResult === "object" && lookupResult.short_id) {
+      const baseUrl = window.location.origin;
+      window.open(`${baseUrl}/p/${lookupResult.short_id}`, "_blank");
+    }
+  };
 
   const filteredPets = useMemo(() => {
     if (!pets) return [];
@@ -154,6 +210,104 @@ export default function AdminPets() {
         </div>
         <PawPrint className="h-8 w-8 text-primary" />
       </div>
+
+      {/* Short ID Lookup */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Search className="h-5 w-5" />
+            QR Code Lookup
+          </CardTitle>
+          <CardDescription>Search for a QR code by its short ID to see which pet it belongs to</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <QrCode className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Enter short ID (e.g., abc123)..."
+                  value={lookupShortId}
+                  onChange={(e) => handleLookupChange(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+          </div>
+
+          {lookupResult === "loading" && (
+            <div className="flex items-center gap-2 text-muted-foreground text-sm mt-4">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Looking up QR code...
+            </div>
+          )}
+
+          {lookupResult === "not_found" && lookupShortId && (
+            <Alert variant="destructive" className="mt-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                No QR code found with ID "{lookupShortId}"
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {lookupError && (
+            <Alert variant="destructive" className="mt-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{lookupError}</AlertDescription>
+            </Alert>
+          )}
+
+          {lookupResult && typeof lookupResult === "object" && (
+            <div className="mt-4 p-4 border rounded-lg bg-muted/30">
+              <div className="flex items-start gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="font-mono text-lg font-semibold">{lookupResult.short_id}</span>
+                    <Badge variant={lookupResult.tag_type === "dog" ? "default" : "secondary"}>
+                      {lookupResult.tag_type === "dog" ? <Dog className="h-3 w-3 mr-1" /> : <Cat className="h-3 w-3 mr-1" />}
+                      {lookupResult.tag_type === "dog" ? "Dog Tag" : "Cat Tag"}
+                    </Badge>
+                  </div>
+
+                  {lookupResult.pet_id ? (
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-12 w-12">
+                        {lookupResult.photo_url ? (
+                          <AvatarImage src={lookupResult.photo_url} alt={lookupResult.pet_name ?? ""} />
+                        ) : (
+                          <AvatarFallback>
+                            <PawPrint className="h-6 w-6" />
+                          </AvatarFallback>
+                        )}
+                      </Avatar>
+                      <div>
+                        <div className="font-medium">{lookupResult.pet_name}</div>
+                        <div className="text-sm text-muted-foreground">{lookupResult.species}</div>
+                        <div className="text-sm text-muted-foreground">{lookupResult.owner_email}</div>
+                        {lookupResult.owner_name && (
+                          <div className="text-xs text-muted-foreground">{lookupResult.owner_name}</div>
+                        )}
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={viewLookupPet} className="ml-auto">
+                        <ExternalLink className="h-4 w-4 mr-1" />
+                        View
+                      </Button>
+                    </div>
+                  ) : (
+                    <Alert className="mt-2">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <AlertDescription className="text-green-600">
+                        This QR code is not assigned to any pet (available in pool).
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Statistics */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
@@ -370,6 +524,14 @@ export default function AdminPets() {
                             >
                               <QrCode className="h-4 w-4" />
                             </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setReassignTarget(pet)}
+                              title="Reassign QR code"
+                            >
+                              <ArrowLeftRight className="h-4 w-4" />
+                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -471,6 +633,14 @@ export default function AdminPets() {
           ownerId={qrTarget.owner_id}
         />
       )}
+
+      {/* Reassign QR Dialog */}
+      <ReassignQRDialog
+        pet={reassignTarget}
+        open={!!reassignTarget}
+        onOpenChange={(open) => !open && setReassignTarget(null)}
+        onReassigned={handleReassigned}
+      />
     </div>
   );
 }
