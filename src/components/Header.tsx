@@ -80,8 +80,8 @@ const MobileNavItem = ({
       className={`flex items-center gap-4 rounded-lg px-4 py-3.5 text-base font-medium transition-all duration-200
         animate-in slide-in-from-left fade-in
         ${active
-          ? "bg-primary text-primary-foreground shadow-md"
-          : "text-foreground hover:bg-primary/10 hover:translate-x-1"
+          ? "bg-white/20 text-white shadow-md"
+          : "text-white/80 hover:text-white hover:bg-white/10 hover:translate-x-1"
         }`}
       style={{
         animationDelay: `${index * 50}ms`,
