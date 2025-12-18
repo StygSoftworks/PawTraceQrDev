@@ -2,7 +2,7 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Upload, X, ImageIcon } from "lucide-react";
+import { Upload, X } from "lucide-react";
 
 type OptimizeOptions = {
   maxWidth?: number;
@@ -108,10 +108,6 @@ export function ImagePickerOptimize({
     [handleFile]
   );
 
-  const compressionRate = value
-    ? Math.round((1 - value.approxKB / value.original.sizeKB) * 100)
-    : 0;
-
   return (
     <div className={className}>
       <Label className="mb-2 block font-medium">{label}</Label>
@@ -155,25 +151,22 @@ export function ImagePickerOptimize({
       ) : (
         <div className="border rounded-lg p-4 bg-card">
           <div className="flex items-start gap-4">
-            <div className="relative group">
+            <div className="relative group shrink-0">
               <img
                 src={value.dataUrl}
                 alt="preview"
-                className="h-32 w-32 rounded-lg object-cover border-2 border-border"
+                className="h-24 w-24 rounded-lg object-cover border border-border"
               />
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                <ImageIcon className="h-8 w-8 text-white" />
-              </div>
             </div>
 
-            <div className="flex-1 space-y-3">
+            <div className="flex-1 min-w-0 space-y-3">
               <div className="flex items-start justify-between gap-2">
-                <div>
+                <div className="min-w-0">
                   <p className="font-medium text-sm truncate">
                     {value.original.name}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {value.width} × {value.height}px
+                    {value.width} x {value.height}px
                   </p>
                 </div>
                 <Button
@@ -181,34 +174,11 @@ export function ImagePickerOptimize({
                   variant="ghost"
                   size="sm"
                   onClick={clear}
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 shrink-0"
                 >
                   <X className="h-4 w-4" />
                 </Button>
               </div>
-
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="space-y-1">
-                  <p className="text-muted-foreground">Original</p>
-                  <p className="font-medium">
-                    {value.original.sizeKB.toLocaleString()} KB
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-muted-foreground">Optimized</p>
-                  <p className="font-medium text-green-600 dark:text-green-400">
-                    {value.approxKB.toLocaleString()} KB
-                  </p>
-                </div>
-              </div>
-
-              {compressionRate > 0 && (
-                <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 rounded-md px-3 py-2">
-                  <p className="text-xs text-green-700 dark:text-green-300 font-medium">
-                    ↓ {compressionRate}% smaller · {value.mimeType}
-                  </p>
-                </div>
-              )}
 
               <Button
                 type="button"
