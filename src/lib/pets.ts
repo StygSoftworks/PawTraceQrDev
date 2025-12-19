@@ -226,3 +226,12 @@ export async function ensureQrForAll(ownerId: string) {
     }
   }
 }
+
+export async function togglePetMissing(petId: string, isMissing: boolean) {
+  const { data, error } = await supabase.rpc("toggle_pet_missing", {
+    p_pet_id: petId,
+    p_is_missing: isMissing,
+  });
+  if (error) throw error;
+  return data;
+}

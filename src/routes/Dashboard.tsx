@@ -30,7 +30,7 @@ import {
 
 import { PetDialog } from "@/components/PetDialog";
 import type { PetRow } from "@/lib/pets";
-import { listPetsByOwner, updatePet } from "@/lib/pets";
+import { listPetsByOwner, togglePetMissing } from "@/lib/pets";
 import { getSharedPets, getShareCount } from "@/lib/pet-sharing";
 import { getSubscriptionBadgeVariant } from "@/config/billing";
 
@@ -110,10 +110,7 @@ export default function Dashboard() {
 
   const setMissingMutation = useMutation({
     mutationFn: async ({ id, missing }: { id: string; missing: boolean }) => {
-      return updatePet(id, {
-        missing,
-        missing_since: missing ? new Date().toISOString() : null,
-      });
+      return togglePetMissing(id, missing);
     },
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ["pets", ownerId] });
@@ -418,7 +415,7 @@ export default function Dashboard() {
                       pet={p}
                       onEdit={p.can_edit ? () => setEditTarget(p) : undefined}
                       onView={() => viewPetPage(p)}
-                      onToggleMissing={p.can_edit ? (next) => handleToggleMissing(p, next) : undefined}
+                      onToggleMissing={(next) => handleToggleMissing(p, next)}
                       togglingMissing={togglingMissing || setMissingMutation.isPending}
                     />
                   ))}
@@ -618,7 +615,7 @@ type SharedPetCardProps = {
   pet: SharedPetRow;
   onEdit?: () => void;
   onView: () => void;
-  onToggleMissing?: (next: boolean) => void;
+  onToggleMissing: (next: boolean) => void;
   togglingMissing: boolean;
 };
 
@@ -695,21 +692,19 @@ function SharedPetCard({
           </Button>
         </div>
 
-        {onToggleMissing && (
-          <div className="flex items-center justify-between pt-2 border-t">
-            <div className="flex items-center gap-2">
-              <Label htmlFor={`missing-shared-${pet.id}`} className="text-sm font-medium cursor-pointer">
-                Mark Missing
-              </Label>
-              <Switch
-                id={`missing-shared-${pet.id}`}
-                checked={!!pet.missing}
-                disabled={togglingMissing}
-                onCheckedChange={onToggleMissing}
-              />
-            </div>
+        <div className="flex items-center justify-between pt-2 border-t">
+          <div className="flex items-center gap-2">
+            <Label htmlFor={`missing-shared-${pet.id}`} className="text-sm font-medium cursor-pointer">
+              Mark Missing
+            </Label>
+            <Switch
+              id={`missing-shared-${pet.id}`}
+              checked={!!pet.missing}
+              disabled={togglingMissing}
+              onCheckedChange={onToggleMissing}
+            />
           </div>
-        )}
+        </div>
       </CardContent>
     </Card>
   );
