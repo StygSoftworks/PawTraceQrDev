@@ -1,11 +1,7 @@
 import { useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/auth/AuthProvider";
 
-/**
- * Logs a scan to the DB via RPC when mounted.
- * - pass shortId from the URL (e.g. /p/:shortId)
- * - if `askGeo` is true, it will try to include coords (with user permission)
- */
 export function ScanLogger({
   shortId,
   askGeo = true,
@@ -13,6 +9,8 @@ export function ScanLogger({
   shortId: string | undefined;
   askGeo?: boolean;
 }) {
+  const { user } = useAuth();
+
   useEffect(() => {
     if (!shortId) return;
 
@@ -29,7 +27,7 @@ export function ScanLogger({
             );
             coords = { lat: p.coords.latitude, lng: p.coords.longitude };
           } catch {
-            /* denied or timeout — ignore */
+            /* denied or timeout */
           }
         }
 
@@ -39,14 +37,14 @@ export function ScanLogger({
           p_short_id: shortId,
           p_referrer: document.referrer || null,
           p_ua: navigator.userAgent,
-          p_city: null,    // optionally fill if you add a geo-IP service
+          p_city: null,
           p_region: null,
           p_country: null,
           p_lat: coords.lat ?? null,
           p_lng: coords.lng ?? null,
+          p_scanned_by: user?.id ?? null,
         });
       } catch (e) {
-        // don’t bother the user if this fails
         console.warn("log_scan failed:", e);
       }
     };
@@ -55,7 +53,7 @@ export function ScanLogger({
     return () => {
       cancelled = true;
     };
-  }, [shortId, askGeo]);
+  }, [shortId, askGeo, user?.id]);
 
   return null;
 }

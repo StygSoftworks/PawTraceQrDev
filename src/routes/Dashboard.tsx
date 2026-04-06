@@ -22,11 +22,7 @@ import { LocationSharesCard } from "@/components/LocationSharesCard";
 import { PetSharingDialog } from "@/components/PetSharingDialog";
 import { PendingInvitationsCard } from "@/components/PendingInvitationsCard";
 
-import {
-  PawPrint, Plus, QrCode, Edit, Trash2, Eye,
-  AlertTriangle, Activity, RefreshCw, AlertCircle, Sparkles, ShieldCheck, ShieldAlert,
-  Users, UserCheck
-} from "lucide-react";
+import { PawPrint, Plus, QrCode, CreditCard as Edit, Trash2, Eye, TriangleAlert as AlertTriangle, Activity, RefreshCw, CircleAlert as AlertCircle, Sparkles, ShieldCheck, ShieldAlert, Users, UserCheck } from "lucide-react";
 
 import { PetDialog } from "@/components/PetDialog";
 import type { PetRow } from "@/lib/pets";
@@ -444,7 +440,7 @@ export default function Dashboard() {
         </TabsContent>
 
         <TabsContent value="activity" className="mt-4">
-          <RecentActivityTable days={30} />
+          <RecentActivityTable />
         </TabsContent>
       </Tabs>
     </div>

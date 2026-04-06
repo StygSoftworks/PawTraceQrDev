@@ -1,19 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { Eye } from "lucide-react";
-import { countScansForPets } from "@/lib/analytics";
+import { countScansForPet } from "@/lib/analytics";
 
 export function PetScanBadge({
   petId,
-  days = 30,
   label = "Scans",
 }: {
   petId: string;
-  days?: number;
   label?: string;
 }) {
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["pet_scan_count", petId, days],
-    queryFn: () => countScansForPets(petId, days),
+    queryKey: ["pet_scan_count", petId],
+    queryFn: () => countScansForPet(petId),
     staleTime: 30_000,
     enabled: !!petId,
   });
@@ -26,9 +24,9 @@ export function PetScanBadge({
         <Eye className="h-5 w-5 text-primary" />
       </div>
       <div>
-        <p className="text-sm font-medium">{label} (Last {days} days)</p>
+        <p className="text-sm font-medium">{label}</p>
         <p className="text-sm text-muted-foreground">
-          {isLoading ? "Loading..." : isError ? "—" : `${data} view${data === 1 ? '' : 's'}`}
+          {isLoading ? "Loading..." : isError ? "\u2014" : `${data} view${data === 1 ? '' : 's'}`}
         </p>
       </div>
     </div>

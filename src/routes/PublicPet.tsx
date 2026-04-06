@@ -402,7 +402,7 @@ export default function PublicPet() {
                           </div>
                         )}
 
-                        <PetScanBadge petId={data.id} days={30} label="QR Code Scans" />
+                        <PetScanBadge petId={data.id} label="QR Code Scans" />
                       </div>
 
                       {hasContactInfo && (

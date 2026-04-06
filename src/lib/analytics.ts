@@ -12,23 +12,45 @@ export type ScanRow = {
   lat: number | null;
   lng: number | null;
   pet_name: string;
+  scanned_by: string | null;
+  scanner_name: string | null;
 };
 
-export async function listRecentScansByOwner(ownerId: string, days = 7): Promise<ScanRow[]> {
-  const since = new Date(Date.now() - days * 864e5).toISOString();
-
+export async function listRecentScans(ownerId: string, limit = 100): Promise<ScanRow[]> {
   const { data, error } = await supabase
     .from("scan_events")
     .select(`
-      id, pet_id, short_id, scanned_at, referrer, city, region, country, lat, lng,
+      id, pet_id, short_id, scanned_at, referrer, city, region, country, lat, lng, scanned_by,
       pets!inner ( id, name, owner_id )
     `)
-    .gte("scanned_at", since)
-    .order("scanned_at", { ascending: false });
+    .order("scanned_at", { ascending: false })
+    .limit(limit);
 
   if (error) throw error;
 
   const rows = (data ?? []).filter((r: any) => r.pets?.owner_id === ownerId);
+
+  const scannerIds = [
+    ...new Set(
+      rows
+        .map((r: any) => r.scanned_by)
+        .filter((id: string | null): id is string => id !== null)
+    ),
+  ];
+
+  let scannerNames: Record<string, string> = {};
+  if (scannerIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, display_name")
+      .in("id", scannerIds);
+    if (profiles) {
+      scannerNames = Object.fromEntries(
+        profiles.map((p) => [p.id, p.display_name || "User"])
+      );
+    }
+  }
+
   return rows.map((r: any) => ({
     id: r.id,
     pet_id: r.pet_id,
@@ -41,18 +63,16 @@ export async function listRecentScansByOwner(ownerId: string, days = 7): Promise
     lat: r.lat,
     lng: r.lng,
     pet_name: r.pets.name,
+    scanned_by: r.scanned_by,
+    scanner_name: r.scanned_by ? (scannerNames[r.scanned_by] || "Logged-in user") : null,
   }));
-} 
+}
 
-/** Count scans for ONE pet in the last `days` days (uses count header). */
-export async function countScansForPets(petId: string, days = 30): Promise<number> {
-  const since = new Date(Date.now() - days * 864e5).toISOString();
-
+export async function countScansForPet(petId: string): Promise<number> {
   const { error, count } = await supabase
     .from("scan_events")
-    .select("id", { count: "exact", head: true }) // head:true = only headers, fast
-    .eq("pet_id", petId)
-    .gte("scanned_at", since);
+    .select("id", { count: "exact", head: true })
+    .eq("pet_id", petId);
 
   if (error) throw error;
   return count ?? 0;
