@@ -69,11 +69,10 @@ export async function listRecentScans(ownerId: string, limit = 100): Promise<Sca
 }
 
 export async function countScansForPet(petId: string): Promise<number> {
-  const { error, count } = await supabase
-    .from("scan_events")
-    .select("id", { count: "exact", head: true })
-    .eq("pet_id", petId);
+  const { data, error } = await supabase.rpc("count_scans_for_pet", {
+    p_pet_id: petId,
+  });
 
   if (error) throw error;
-  return count ?? 0;
+  return (data as number) ?? 0;
 }
