@@ -1,6 +1,6 @@
 // src/routes/PublicPet.tsx
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { PawPrint, TriangleAlert as AlertTriangle, Phone, Mail, MapPin, Info, Hop as Home, Heart, Clock, FileText } from "lucide-react";
+import { PawPrint, TriangleAlert as AlertTriangle, Phone, Mail, MapPin, Info, Hop as Home, Heart, Clock, FileText, ArrowRight, Shield, QrCode } from "lucide-react";
 import { ScanLogger } from "@/components/ScanLogger";
 import { PetScanBadge } from "@/components/PetScanBadge";
 import { SocialMediaLinks } from "@/components/SocialMediaLinks";
@@ -71,6 +71,8 @@ export default function PublicPet() {
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [locationDialogOpen, setLocationDialogOpen] = useState(false);
 
+  const navigate = useNavigate();
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ["public-pet", id],
     enabled: !!id,
@@ -80,8 +82,6 @@ export default function PublicPet() {
         .select("*")
         .eq("short_id", id)
         .maybeSingle();
-      
-      console.log("Fetched pet data:", petData);
 
       if (petError) throw petError;
       if (!petData) return null;
@@ -98,6 +98,16 @@ export default function PublicPet() {
       } as PublicPet;
     },
     staleTime: 60_000,
+  });
+
+  const { data: isClaimable } = useQuery({
+    queryKey: ["qr-claimable", id],
+    enabled: !!id && !isLoading && !data,
+    queryFn: async () => {
+      const { data: result } = await supabase.rpc("check_qr_claimable", { p_short_id: id });
+      return result === true;
+    },
+    staleTime: 30_000,
   });
 
   useEffect(() => {
@@ -147,29 +157,87 @@ export default function PublicPet() {
             </div>
           </Card>
         ) : isError || !data ? (
-          <Card className="shadow-xl">
-            <CardHeader className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="h-12 w-12 bg-destructive/10 rounded-xl flex items-center justify-center">
-                  <AlertTriangle className="h-6 w-6 text-destructive" />
-                </div>
-                <div>
-                  <CardTitle className="text-2xl">Pet Not Found</CardTitle>
-                  <CardDescription className="text-base">
-                    This QR code may be invalid or the pet profile is no longer available
-                  </CardDescription>
+          isClaimable ? (
+            <Card className="shadow-xl border-primary/20 overflow-hidden">
+              <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-8 pb-0">
+                <div className="flex flex-col items-center text-center space-y-4">
+                  <div className="h-20 w-20 bg-primary/10 rounded-2xl flex items-center justify-center ring-4 ring-primary/5 animate-in zoom-in-50 duration-500">
+                    <QrCode className="h-10 w-10 text-primary" />
+                  </div>
+                  <div className="space-y-2">
+                    <CardTitle className="text-3xl tracking-tight">Welcome to PawTrace!</CardTitle>
+                    <CardDescription className="text-base max-w-md mx-auto">
+                      This tag is ready to be set up. Link it to your pet in just a few steps to keep them safe.
+                    </CardDescription>
+                  </div>
                 </div>
               </div>
-            </CardHeader>
-            <CardContent>
-              <Button asChild className="gap-2">
-                <Link to="/">
-                  <Home className="h-4 w-4" />
-                  Go to Homepage
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
+              <CardContent className="p-8 space-y-6">
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <div className="flex flex-col items-center text-center p-4 rounded-xl bg-secondary/30">
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+                      <span className="text-sm font-bold text-primary">1</span>
+                    </div>
+                    <p className="text-sm font-medium">Create Account</p>
+                    <p className="text-xs text-muted-foreground mt-1">Quick and free sign up</p>
+                  </div>
+                  <div className="flex flex-col items-center text-center p-4 rounded-xl bg-secondary/30">
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+                      <span className="text-sm font-bold text-primary">2</span>
+                    </div>
+                    <p className="text-sm font-medium">Add Your Pet</p>
+                    <p className="text-xs text-muted-foreground mt-1">Name, photo, and details</p>
+                  </div>
+                  <div className="flex flex-col items-center text-center p-4 rounded-xl bg-secondary/30">
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+                      <span className="text-sm font-bold text-primary">3</span>
+                    </div>
+                    <p className="text-sm font-medium">Tag is Live!</p>
+                    <p className="text-xs text-muted-foreground mt-1">Anyone can scan to find you</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-center gap-3 pt-2">
+                  <Button
+                    size="lg"
+                    className="w-full sm:w-auto px-8 gap-2 text-base h-12 transition-all hover:scale-105"
+                    onClick={() => navigate(`/onboard/${id}`)}
+                  >
+                    Get Started
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Shield className="h-3.5 w-3.5" />
+                    Free to set up -- takes under 2 minutes
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="shadow-xl">
+              <CardHeader className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 bg-destructive/10 rounded-xl flex items-center justify-center">
+                    <AlertTriangle className="h-6 w-6 text-destructive" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-2xl">Pet Not Found</CardTitle>
+                    <CardDescription className="text-base">
+                      This QR code may be invalid or the pet profile is no longer available
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Button asChild className="gap-2">
+                  <Link to="/">
+                    <Home className="h-4 w-4" />
+                    Go to Homepage
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          )
         ) : (
           <div className="space-y-6">
             {data.subscription_status !== 'active' && (

@@ -22,6 +22,7 @@ const Billing = lazy(() => import("./routes/Billing"));
 const Pricing = lazy(() => import("./routes/Pricing"));
 const About = lazy(() => import("./routes/About"));
 const Contact = lazy(() => import("./routes/Contact"));
+const Onboard = lazy(() => import("./routes/Onboard"));
 
 
 import "./index.css";
@@ -84,6 +85,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 
               {/* Public QR landing page (no auth, no AppLayout) */}
               <Route path="/p/:id" element={<PublicPet />} />
+
+              {/* Onboarding flow for new tag scans */}
+              <Route path="/onboard/:id" element={<Onboard />} />
 
               {/* (optional) catch-all */}
               {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
