@@ -235,7 +235,7 @@ export default function PublicPet() {
                       </CardTitle>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <Badge variant="secondary" className="capitalize text-sm px-3 py-1">
+                      <Badge className="capitalize text-sm px-3 py-1 bg-slate-700 text-white dark:bg-slate-200 dark:text-slate-900 border-transparent">
                         {data.species === "dog" ? "Dog" : data.species === "cat" ? "Cat" : "Pet"} - {data.species}
                       </Badge>
                       {data.breed && (
