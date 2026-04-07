@@ -3,7 +3,7 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Menu, LogIn, UserPlus, MessageSquare, ShieldCheck, CreditCard, Hop as Home, LayoutDashboard, User, Moon, Sun, Info, Mail, QrCode, PawPrint, ChevronDown } from "lucide-react";
+import { Menu, LogIn, UserPlus, MessageSquare, ShieldCheck, Tag, Hop as Home, LayoutDashboard, User, Moon, Sun, Info, Mail, QrCode, PawPrint, ChevronDown } from "lucide-react";
 import { useAuth } from "@/auth/AuthProvider";
 import { useProfile } from "@/profile/useProfile";
 import { useTheme } from "@/hooks/useTheme";
@@ -17,7 +17,7 @@ const getAuthenticatedNavItems = () => {
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { to: "/account", label: "Account", icon: User },
     //{ to: "/pricing", label: "Pricing", icon: Tag },
-    { to: "/billing", label: "Billing", icon: CreditCard },
+    { to: "/billing", label: "My Tags", icon: Tag },
     { to: "/feedback", label: "Feedback", icon: MessageSquare },
     { to: "/contact", label: "Contact", icon: Mail },
     { to: "/about", label: "About", icon: Info },

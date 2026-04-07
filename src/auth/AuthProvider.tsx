@@ -30,9 +30,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(data.session?.user ?? null);
       setLoading(false);
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((_ev, s) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((ev, s) => {
       setSession(s);
       setUser(s?.user ?? null);
+
+      if (ev === "SIGNED_IN" && s?.user) {
+        const pendingTag = localStorage.getItem("pending_tag_claim");
+        if (pendingTag) {
+          localStorage.removeItem("pending_tag_claim");
+          window.location.href = `/onboard/${pendingTag}`;
+        }
+      }
     });
     return () => sub.subscription.unsubscribe();
   }, []);

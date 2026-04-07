@@ -26,6 +26,7 @@ export type AdminPetRow = {
   subscription_activated_at: string | null;
   subscription_expires_at: string | null;
   subscription_plan_id: string | null;
+  tag_status: "active" | "inactive" | "pending_payment" | null;
   owner_id: string;
   owner_email: string | null;
   owner_name: string | null;

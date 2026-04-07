@@ -1,36 +1,32 @@
-// src/config/billing.ts
+export const TAG_PRICE = 15.0;
+export const TAG_CURRENCY = "USD";
 
-export const PAYPAL_PLANS = {
-  PER_PET_MONTHLY: "P-01B964946R701620HNDPMUVA",
-  PER_PET_YEARLY:  "P-4V1531673F796000SNDPMUVA",
-} as const;
+export type TagStatus = "active" | "inactive" | "pending_payment";
 
-export const PLAN_DETAILS = {
-  [PAYPAL_PLANS.PER_PET_MONTHLY]: {
-    name: "Monthly Pet Subscription",
-    interval: "month",
-    price: "$4.99/month",
-  },
-  [PAYPAL_PLANS.PER_PET_YEARLY]: {
-    name: "Yearly Pet Subscription",
-    interval: "year",
-    price: "$49.99/year",
-  },
-} as const;
-
-export type SubscriptionStatus = 'active' | 'inactive' | 'expired' | 'cancelled' | 'pending';
-
-export function getSubscriptionBadgeVariant(status: SubscriptionStatus): 'default' | 'secondary' | 'destructive' | 'outline' {
+export function getTagBadgeVariant(
+  status: TagStatus
+): "default" | "secondary" | "destructive" | "outline" {
   switch (status) {
-    case 'active':
-      return 'default';
-    case 'pending':
-      return 'secondary';
-    case 'inactive':
-    case 'expired':
-    case 'cancelled':
-      return 'destructive';
+    case "active":
+      return "default";
+    case "pending_payment":
+      return "secondary";
+    case "inactive":
+      return "destructive";
     default:
-      return 'outline';
+      return "outline";
+  }
+}
+
+export function getTagStatusLabel(status: TagStatus): string {
+  switch (status) {
+    case "active":
+      return "Active";
+    case "pending_payment":
+      return "Pending Payment";
+    case "inactive":
+      return "Inactive";
+    default:
+      return "Unknown";
   }
 }

@@ -5,9 +5,17 @@ import { PawPrint, Eye, LayoutDashboard, Check } from "lucide-react";
 
 type Props = {
   shortId: string;
+  assignedPetName?: string | null;
 };
 
-export function OnboardSuccess({ shortId }: Props) {
+export function OnboardSuccess({ shortId, assignedPetName }: Props) {
+  const title = assignedPetName
+    ? `Tag Linked to ${assignedPetName}!`
+    : "Your Tag is Live!";
+  const description = assignedPetName
+    ? `Tag ${shortId} is now connected to ${assignedPetName}. Anyone who scans it will see the pet's info and be able to contact you.`
+    : "Your pet's profile is now connected to this tag. Anyone who scans it will see your pet's info and be able to contact you.";
+
   return (
     <Card className="shadow-xl animate-in fade-in-50 slide-in-from-bottom-4 duration-500 overflow-hidden">
       <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-8">
@@ -16,9 +24,9 @@ export function OnboardSuccess({ shortId }: Props) {
             <Check className="h-10 w-10 text-green-600 dark:text-green-400" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-2xl font-bold tracking-tight">Your Tag is Live!</h2>
+            <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
             <p className="text-muted-foreground max-w-sm mx-auto">
-              Your pet's profile is now connected to this tag. Anyone who scans it will see your pet's info and be able to contact you.
+              {description}
             </p>
           </div>
         </div>

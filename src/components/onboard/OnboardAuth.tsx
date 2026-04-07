@@ -30,9 +30,10 @@ type SignInValues = z.infer<typeof SignInSchema>;
 
 type Props = {
   onComplete: () => void;
+  shortId?: string;
 };
 
-export function OnboardAuth({ onComplete }: Props) {
+export function OnboardAuth({ onComplete, shortId }: Props) {
   const { signUpWithEmail, signInWithEmail } = useAuth();
   const [mode, setMode] = useState<"register" | "signin">("register");
   const [serverError, setServerError] = useState<string | null>(null);
@@ -53,6 +54,9 @@ export function OnboardAuth({ onComplete }: Props) {
     try {
       const { needsEmailConfirm } = await signUpWithEmail(vals.email, vals.password, vals.name);
       if (needsEmailConfirm) {
+        if (shortId) {
+          localStorage.setItem("pending_tag_claim", shortId);
+        }
         setServerError("Please check your email to confirm your account, then come back to this page.");
         return;
       }

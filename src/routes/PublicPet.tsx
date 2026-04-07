@@ -1,4 +1,3 @@
-// src/routes/PublicPet.tsx
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -8,13 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { PawPrint, TriangleAlert as AlertTriangle, Phone, Mail, MapPin, Info, Hop as Home, Heart, Clock, FileText, ArrowRight, Shield, QrCode } from "lucide-react";
+import {
+  PawPrint, TriangleAlert as AlertTriangle, Phone, Mail, MapPin, Info,
+  Hop as Home, Heart, Clock, FileText, ArrowRight, Shield, QrCode, Plus, Tag,
+} from "lucide-react";
 import { ScanLogger } from "@/components/ScanLogger";
 import { PetScanBadge } from "@/components/PetScanBadge";
 import { SocialMediaLinks } from "@/components/SocialMediaLinks";
 import { LocationShareDialog } from "@/components/LocationShareDialog";
-import { InactiveProfileBanner } from "@/components/InactiveProfileBanner";
+import { ClaimTagDialog } from "@/components/ClaimTagDialog";
 import Header from "@/components/Header";
+import { useAuth } from "@/auth/AuthProvider";
 import { supabase } from "@/lib/supabase";
 import { applyTheme, DEFAULT_THEME } from "@/lib/themes";
 
@@ -41,7 +44,8 @@ type PublicPet = {
   environment: "indoor" | "outdoor" | "indoor_outdoor";
   owner_website: string | null;
   theme_preset?: string | null;
-  subscription_status: "active" | "inactive" | "expired" | "cancelled" | "pending";
+  tag_status: "active" | "inactive" | "pending_payment" | null;
+  subscription_status: string | null;
 };
 
 function timeSince(iso?: string | null) {
@@ -68,8 +72,10 @@ function timeSince(iso?: string | null) {
 
 export default function PublicPet() {
   const { id } = useParams();
+  const { user } = useAuth();
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [locationDialogOpen, setLocationDialogOpen] = useState(false);
+  const [claimDialogOpen, setClaimDialogOpen] = useState(false);
 
   const navigate = useNavigate();
 
@@ -126,18 +132,17 @@ export default function PublicPet() {
   }, [data?.theme_preset]);
 
   const hasContactInfo = data?.owner_email || data?.owner_phone;
-  const hasSocialLinks = data?.owner_instagram || data?.owner_facebook || 
-                         data?.owner_twitter || data?.owner_telegram || 
+  const hasSocialLinks = data?.owner_instagram || data?.owner_facebook ||
+                         data?.owner_twitter || data?.owner_telegram ||
                          data?.owner_whatsapp || data?.owner_website;
 
   return (
     <>
     <ScanLogger shortId={id} askGeo={true} />
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-purple-50 dark:from-slate-950 dark:via-purple-950/20 dark:to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50/50 to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-brand-rose/25 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-brand-lavender/25 rounded-full blur-3xl" />
-        <div className="absolute top-1/3 right-1/3 w-96 h-96 bg-brand-peach/15 rounded-full blur-3xl" />
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
       </div>
 
       <Header />
@@ -158,61 +163,15 @@ export default function PublicPet() {
           </Card>
         ) : isError || !data ? (
           isClaimable ? (
-            <Card className="shadow-xl border-primary/20 overflow-hidden">
-              <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-8 pb-0">
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="h-20 w-20 bg-primary/10 rounded-2xl flex items-center justify-center ring-4 ring-primary/5 animate-in zoom-in-50 duration-500">
-                    <QrCode className="h-10 w-10 text-primary" />
-                  </div>
-                  <div className="space-y-2">
-                    <CardTitle className="text-3xl tracking-tight">Welcome to PawTrace!</CardTitle>
-                    <CardDescription className="text-base max-w-md mx-auto">
-                      This tag is ready to be set up. Link it to your pet in just a few steps to keep them safe.
-                    </CardDescription>
-                  </div>
-                </div>
-              </div>
-              <CardContent className="p-8 space-y-6">
-                <div className="grid gap-4 sm:grid-cols-3">
-                  <div className="flex flex-col items-center text-center p-4 rounded-xl bg-secondary/30">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                      <span className="text-sm font-bold text-primary">1</span>
-                    </div>
-                    <p className="text-sm font-medium">Create Account</p>
-                    <p className="text-xs text-muted-foreground mt-1">Quick and free sign up</p>
-                  </div>
-                  <div className="flex flex-col items-center text-center p-4 rounded-xl bg-secondary/30">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                      <span className="text-sm font-bold text-primary">2</span>
-                    </div>
-                    <p className="text-sm font-medium">Add Your Pet</p>
-                    <p className="text-xs text-muted-foreground mt-1">Name, photo, and details</p>
-                  </div>
-                  <div className="flex flex-col items-center text-center p-4 rounded-xl bg-secondary/30">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                      <span className="text-sm font-bold text-primary">3</span>
-                    </div>
-                    <p className="text-sm font-medium">Tag is Live!</p>
-                    <p className="text-xs text-muted-foreground mt-1">Anyone can scan to find you</p>
-                  </div>
-                </div>
-
-                <div className="flex flex-col items-center gap-3 pt-2">
-                  <Button
-                    size="lg"
-                    className="w-full sm:w-auto px-8 gap-2 text-base h-12 transition-all hover:scale-105"
-                    onClick={() => navigate(`/onboard/${id}`)}
-                  >
-                    Get Started
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Shield className="h-3.5 w-3.5" />
-                    Free to set up -- takes under 2 minutes
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            user ? (
+              <LoggedInClaimCard
+                shortId={id!}
+                onAssignExisting={() => setClaimDialogOpen(true)}
+                onCreateNew={() => navigate(`/onboard/${id}`)}
+              />
+            ) : (
+              <AnonymousClaimCard onGetStarted={() => navigate(`/onboard/${id}`)} />
+            )
           ) : (
             <Card className="shadow-xl">
               <CardHeader className="space-y-3">
@@ -240,15 +199,20 @@ export default function PublicPet() {
           )
         ) : (
           <div className="space-y-6">
-            {data.subscription_status !== 'active' && (
-              <InactiveProfileBanner petName={data.name} subscriptionStatus={data.subscription_status} />
+            {data.tag_status === 'pending_payment' && (
+              <Alert className="border-amber-500 bg-amber-50 dark:bg-amber-950/20">
+                <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                <AlertDescription className="text-amber-900 dark:text-amber-200 font-medium">
+                  {data.name}'s tag is pending payment activation. The profile may not be fully visible until payment is completed.
+                </AlertDescription>
+              </Alert>
             )}
 
             {data.missing && (
               <Alert variant="destructive" className="animate-in fade-in-50 slide-in-from-top-2 duration-300">
                 <AlertTriangle className="h-5 w-5" />
                 <AlertDescription className="text-base font-medium">
-                  <span className="block mb-1">🚨 This pet is currently MISSING!</span>
+                  <span className="block mb-1">This pet is currently MISSING!</span>
                   {data.missing_since && (
                     <span className="text-sm opacity-90">
                       Missing for {timeSince(data.missing_since)}
@@ -272,7 +236,7 @@ export default function PublicPet() {
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                       <Badge variant="secondary" className="capitalize text-sm px-3 py-1">
-                        {data.species === "dog" ? "🐕" : data.species === "cat" ? "🐱" : "🐾"} {data.species}
+                        {data.species === "dog" ? "Dog" : data.species === "cat" ? "Cat" : "Pet"} - {data.species}
                       </Badge>
                       {data.breed && (
                         <Badge variant="outline" className="text-sm px-3 py-1">
@@ -285,14 +249,14 @@ export default function PublicPet() {
                         </Badge>
                       )}
                       <Badge variant="outline" className="text-sm px-3 py-1">
-                        {data.environment === "indoor" && "🏠 Indoor"}
-                        {data.environment === "outdoor" && "🌳 Outdoor"}
-                        {data.environment === "indoor_outdoor" && "🏡 Indoor & Outdoor"}
+                        {data.environment === "indoor" && "Indoor"}
+                        {data.environment === "outdoor" && "Outdoor"}
+                        {data.environment === "indoor_outdoor" && "Indoor & Outdoor"}
                       </Badge>
                     </div>
                   </div>
-                  
-                  <Badge 
+
+                  <Badge
                     variant={data.missing ? "destructive" : "default"}
                     className={`text-sm px-4 py-2 gap-2 ${data.missing ? 'animate-pulse' : ''}`}
                   >
@@ -343,7 +307,7 @@ export default function PublicPet() {
                         <Phone className="h-5 w-5 text-primary" />
                         Contact Owner
                       </div>
-                      
+
                       <Alert className="border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950">
                         <AlertDescription className="text-blue-800 dark:text-blue-200">
                           If you've found this pet, please contact the owner using the information below
@@ -358,7 +322,7 @@ export default function PublicPet() {
                             </div>
                             <div>
                               <p className="text-sm font-medium">Phone</p>
-                              <a 
+                              <a
                                 href={`tel:${data.owner_phone}`}
                                 className="text-primary hover:underline font-medium"
                               >
@@ -375,7 +339,7 @@ export default function PublicPet() {
                             </div>
                             <div>
                               <p className="text-sm font-medium">Email</p>
-                              <a 
+                              <a
                                 href={`mailto:${data.owner_email}`}
                                 className="text-primary hover:underline font-medium"
                               >
@@ -393,7 +357,7 @@ export default function PublicPet() {
                             <div>
                               <p className="text-sm font-medium">Last Seen</p>
                               <p className="text-sm text-muted-foreground">
-                                {data.missing_since 
+                                {data.missing_since
                                   ? timeSince(data.missing_since) + " ago"
                                   : "Recently"
                                 }
@@ -528,7 +492,129 @@ export default function PublicPet() {
           onOpenChange={setLocationDialogOpen}
         />
       )}
+
+      {id && (
+        <ClaimTagDialog
+          shortId={id}
+          open={claimDialogOpen}
+          onOpenChange={setClaimDialogOpen}
+        />
+      )}
     </div>
     </>
+  );
+}
+
+function AnonymousClaimCard({ onGetStarted }: { onGetStarted: () => void }) {
+  return (
+    <Card className="shadow-xl border-primary/20 overflow-hidden">
+      <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-8 pb-0">
+        <div className="flex flex-col items-center text-center space-y-4">
+          <div className="h-20 w-20 bg-primary/10 rounded-2xl flex items-center justify-center ring-4 ring-primary/5 animate-in zoom-in-50 duration-500">
+            <QrCode className="h-10 w-10 text-primary" />
+          </div>
+          <div className="space-y-2">
+            <CardTitle className="text-3xl tracking-tight">Welcome to PawTrace!</CardTitle>
+            <CardDescription className="text-base max-w-md mx-auto">
+              This tag is ready to be set up. Link it to your pet in just a few steps to keep them safe.
+            </CardDescription>
+          </div>
+        </div>
+      </div>
+      <CardContent className="p-8 space-y-6">
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="flex flex-col items-center text-center p-4 rounded-xl bg-secondary/30">
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+              <span className="text-sm font-bold text-primary">1</span>
+            </div>
+            <p className="text-sm font-medium">Create Account</p>
+            <p className="text-xs text-muted-foreground mt-1">Quick and free sign up</p>
+          </div>
+          <div className="flex flex-col items-center text-center p-4 rounded-xl bg-secondary/30">
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+              <span className="text-sm font-bold text-primary">2</span>
+            </div>
+            <p className="text-sm font-medium">Add Your Pet</p>
+            <p className="text-xs text-muted-foreground mt-1">Name, photo, and details</p>
+          </div>
+          <div className="flex flex-col items-center text-center p-4 rounded-xl bg-secondary/30">
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+              <span className="text-sm font-bold text-primary">3</span>
+            </div>
+            <p className="text-sm font-medium">Tag is Live!</p>
+            <p className="text-xs text-muted-foreground mt-1">Anyone can scan to find you</p>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-center gap-3 pt-2">
+          <Button
+            size="lg"
+            className="w-full sm:w-auto px-8 gap-2 text-base h-12 transition-all hover:scale-105"
+            onClick={onGetStarted}
+          >
+            Get Started
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Shield className="h-3.5 w-3.5" />
+            Free to set up -- takes under 2 minutes
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function LoggedInClaimCard({
+  shortId,
+  onAssignExisting,
+  onCreateNew,
+}: {
+  shortId: string;
+  onAssignExisting: () => void;
+  onCreateNew: () => void;
+}) {
+  return (
+    <Card className="shadow-xl border-primary/20 overflow-hidden">
+      <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-8 pb-0">
+        <div className="flex flex-col items-center text-center space-y-4">
+          <div className="h-20 w-20 bg-primary/10 rounded-2xl flex items-center justify-center ring-4 ring-primary/5 animate-in zoom-in-50 duration-500">
+            <Tag className="h-10 w-10 text-primary" />
+          </div>
+          <div className="space-y-2">
+            <CardTitle className="text-3xl tracking-tight">Claim This Tag</CardTitle>
+            <CardDescription className="text-base max-w-md mx-auto">
+              Tag <span className="font-mono font-medium">{shortId}</span> is available.
+              Link it to one of your pets or create a new pet profile.
+            </CardDescription>
+          </div>
+        </div>
+      </div>
+      <CardContent className="p-8 space-y-4">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Button
+            size="lg"
+            className="h-14 gap-3 text-base transition-all hover:scale-105"
+            onClick={onAssignExisting}
+          >
+            <PawPrint className="h-5 w-5" />
+            Assign to Existing Pet
+          </Button>
+          <Button
+            size="lg"
+            variant="outline"
+            className="h-14 gap-3 text-base transition-all hover:scale-105"
+            onClick={onCreateNew}
+          >
+            <Plus className="h-5 w-5" />
+            Create New Pet
+          </Button>
+        </div>
+        <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground pt-2">
+          <Shield className="h-3.5 w-3.5" />
+          Your existing tag will be unlinked and returned to your account
+        </div>
+      </CardContent>
+    </Card>
   );
 }

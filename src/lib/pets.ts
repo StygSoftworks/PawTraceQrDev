@@ -46,6 +46,7 @@ export type PetRow = {
   subscription_activated_at: string | null;
   subscription_expires_at: string | null;
   subscription_plan_id: string | null;
+  tag_status: "active" | "inactive" | "pending_payment" | null;
 };
 
 export type PetUpdate = Partial<PetInsert> & { id: string };

@@ -28,7 +28,8 @@ import { PetDialog } from "@/components/PetDialog";
 import type { PetRow } from "@/lib/pets";
 import { listPetsByOwner, togglePetMissing } from "@/lib/pets";
 import { getSharedPets, getShareCount } from "@/lib/pet-sharing";
-import { getSubscriptionBadgeVariant } from "@/config/billing";
+import { getTagBadgeVariant, getTagStatusLabel } from "@/config/billing";
+import type { TagStatus } from "@/config/billing";
 
 type SharedPetRow = PetRow & {
   share_id: string;
@@ -496,10 +497,10 @@ function OwnedPetCard({
               </Badge>
             )}
             <Badge
-              variant={getSubscriptionBadgeVariant(pet.subscription_status)}
+              variant={getTagBadgeVariant((pet.tag_status ?? "active") as TagStatus)}
               className="gap-1 text-xs"
             >
-              {pet.subscription_status === 'active' ? (
+              {(pet.tag_status ?? "active") === "active" ? (
                 <>
                   <ShieldCheck className="h-3 w-3" />
                   Active
@@ -507,9 +508,7 @@ function OwnedPetCard({
               ) : (
                 <>
                   <ShieldAlert className="h-3 w-3" />
-                  {pet.subscription_status === 'expired' ? 'Expired' :
-                   pet.subscription_status === 'cancelled' ? 'Cancelled' :
-                   pet.subscription_status === 'pending' ? 'Pending' : 'Inactive'}
+                  {getTagStatusLabel((pet.tag_status ?? "inactive") as TagStatus)}
                 </>
               )}
             </Badge>

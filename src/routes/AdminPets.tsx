@@ -12,12 +12,10 @@ import { QRCodeDialog } from "@/components/QRCodeDialog";
 import { ReassignQRDialog } from "@/components/ReassignQRDialog";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Search, Eye, QrCode, PawPrint, AlertCircle, ArrowLeftRight, Loader2,
-  ChevronDown, ChevronUp, Dog, Cat, Home, Trees, Mountain, ExternalLink, CheckCircle
-} from "lucide-react";
+import { Search, Eye, QrCode, PawPrint, CircleAlert as AlertCircle, ArrowLeftRight, Loader as Loader2, ChevronDown, ChevronUp, Dog, Cat, Hop as Home, Trees, Mountain, ExternalLink, CircleCheck as CheckCircle } from "lucide-react";
 import { format } from "date-fns";
-import { getSubscriptionBadgeVariant } from "@/config/billing";
+import { getTagBadgeVariant } from "@/config/billing";
+import type { TagStatus } from "@/config/billing";
 import type { PetRow } from "@/lib/pets";
 
 function debounce<T extends (...args: Parameters<T>) => void>(fn: T, ms: number) {
@@ -119,7 +117,7 @@ export default function AdminPets() {
       cats: pets.filter((p) => p.species === "cat").length,
       other: pets.filter((p) => p.species === "other").length,
       missing: pets.filter((p) => p.missing).length,
-      active: pets.filter((p) => p.subscription_status === "active").length,
+      active: pets.filter((p) => (p.tag_status ?? p.subscription_status) === "active").length,
     };
   }, [pets]);
 
@@ -157,6 +155,7 @@ export default function AdminPets() {
       subscription_activated_at: pet.subscription_activated_at,
       subscription_expires_at: pet.subscription_expires_at,
       subscription_plan_id: pet.subscription_plan_id,
+      tag_status: pet.tag_status,
     };
     setQrTarget(petRow);
   };
@@ -498,8 +497,8 @@ export default function AdminPets() {
                                 Missing
                               </Badge>
                             )}
-                            <Badge variant={getSubscriptionBadgeVariant(pet.subscription_status)} className="w-fit capitalize">
-                              {pet.subscription_status}
+                            <Badge variant={getTagBadgeVariant((pet.tag_status ?? pet.subscription_status ?? "active") as TagStatus)} className="w-fit capitalize">
+                              {pet.tag_status ?? pet.subscription_status}
                             </Badge>
                           </div>
                         </TableCell>
