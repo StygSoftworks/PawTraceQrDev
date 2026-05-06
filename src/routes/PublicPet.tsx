@@ -138,7 +138,7 @@ export default function PublicPet() {
 
   return (
     <>
-    <ScanLogger shortId={id} askGeo={true} />
+    <ScanLogger shortId={id} />
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50/50 to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
