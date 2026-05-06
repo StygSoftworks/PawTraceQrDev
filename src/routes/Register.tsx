@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
-import { CircleAlert as AlertCircle, Mail, Eye, EyeOff, ChevronDown, ChevronUp } from "lucide-react";
+import { CircleAlert as AlertCircle, Eye, EyeOff, ChevronDown, ChevronUp } from "lucide-react";
 import { SocialMediaInput } from "@/components/SocialMediaInput";
 
 const RegisterSchema = z.object({
@@ -61,7 +61,6 @@ export default function Register() {
   const { signUpWithEmail } = useAuth();
   const nav = useNavigate();
   const [serverError, setServerError] = useState<string | null>(null);
-  const [emailSent, setEmailSent] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showOptional, setShowOptional] = useState(false);
@@ -144,16 +143,6 @@ export default function Register() {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {emailSent && (
-            <Alert className="animate-in fade-in-50 slide-in-from-top-2 duration-300 border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950">
-              <Mail className="h-4 w-4 text-green-600 dark:text-green-400" />
-              <AlertDescription className="text-green-800 dark:text-green-200">
-                We sent a confirmation link to <span className="font-semibold">{emailSent}</span>. 
-                Please verify your email to finish creating your account.
-              </AlertDescription>
-            </Alert>
-          )}
-
           {serverError && (
             <Alert variant="destructive" className="animate-in fade-in-50 slide-in-from-top-2 duration-300">
               <AlertCircle className="h-4 w-4" />
