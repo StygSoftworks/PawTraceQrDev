@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -34,6 +35,7 @@ type Props = {
 };
 
 export function OnboardAuth({ onComplete, shortId }: Props) {
+  const navigate = useNavigate();
   const { signUpWithEmail, signInWithEmail } = useAuth();
   const [mode, setMode] = useState<"register" | "signin">("register");
   const [serverError, setServerError] = useState<string | null>(null);
@@ -57,7 +59,7 @@ export function OnboardAuth({ onComplete, shortId }: Props) {
         if (shortId) {
           localStorage.setItem("pending_tag_claim", shortId);
         }
-        setServerError("Please check your email to confirm your account, then come back to this page.");
+        navigate(`/check-email?email=${encodeURIComponent(vals.email)}&next=onboard`);
         return;
       }
       onComplete();

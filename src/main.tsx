@@ -23,6 +23,7 @@ const Pricing = lazy(() => import("./routes/Pricing"));
 const About = lazy(() => import("./routes/About"));
 const Contact = lazy(() => import("./routes/Contact"));
 const Onboard = lazy(() => import("./routes/Onboard"));
+const CheckEmail = lazy(() => import("./routes/CheckEmail"));
 
 
 import "./index.css";
@@ -88,6 +89,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 
               {/* Onboarding flow for new tag scans */}
               <Route path="/onboard/:id" element={<Onboard />} />
+
+              {/* Email verification page */}
+              <Route path="/check-email" element={<CheckEmail />} />
 
               {/* (optional) catch-all */}
               {/* <Route path="*" element={<Navigate to="/" replace />} /> */}

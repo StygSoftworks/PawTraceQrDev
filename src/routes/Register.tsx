@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
-import { AlertCircle, Mail, Eye, EyeOff, ChevronDown, ChevronUp } from "lucide-react";
+import { CircleAlert as AlertCircle, Mail, Eye, EyeOff, ChevronDown, ChevronUp } from "lucide-react";
 import { SocialMediaInput } from "@/components/SocialMediaInput";
 
 const RegisterSchema = z.object({
@@ -108,7 +108,7 @@ export default function Register() {
       }
       
       if (needsEmailConfirm) {
-        setEmailSent(vals.email);
+        nav(`/check-email?email=${encodeURIComponent(vals.email)}`, { replace: true });
       } else {
         nav("/account", { replace: true });
       }
