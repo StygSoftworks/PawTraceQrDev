@@ -32,13 +32,11 @@ import { ThemeProvider } from "./components/ThemeProvider";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-const ReactQueryDevtools = import.meta.env.DEV
-  ? lazy(() =>
-      import("@tanstack/react-query-devtools").then((mod) => ({
-        default: mod.ReactQueryDevtools,
-      }))
-    )
-  : () => null;
+const ReactQueryDevtools = lazy(() =>
+  import("@tanstack/react-query-devtools").then((mod) => ({
+    default: mod.ReactQueryDevtools,
+  }))
+);
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -98,7 +96,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
             </Routes>
             </Suspense>
 
-            <ReactQueryDevtools initialIsOpen={false} />
+            {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
           </ThemeProvider>
         </QueryClientProvider>
       </AuthProvider>
