@@ -22,10 +22,7 @@ export default defineConfig({
       output: {
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
-            if (id.includes('react-dom')) {
-              return 'react-dom';
-            }
-            if (id.includes('react-router') || id.includes('@remix-run')) {
+            if (id.includes('react-dom') || id.includes('react-router') || id.includes('@remix-run')) {
               return 'router';
             }
             if (id.includes('@radix-ui')) {
