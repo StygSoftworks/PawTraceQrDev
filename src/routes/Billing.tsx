@@ -1,25 +1,102 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/auth/AuthProvider";
-import { getUserTagsSummary, type UserTag } from "@/lib/claim-tag";
+import { supabase } from "@/lib/supabase";
+import { getStatusBadgeVariant, getStatusLabel } from "@/config/billing";
+import type { EntitlementType, EntitlementStatus } from "@/config/billing";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tag, PawPrint, ShoppingBag, Link as LinkIcon, Unlink, ExternalLink } from "lucide-react";
+import {
+  Tag, PawPrint, ShoppingBag, Link as LinkIcon, Unlink, ExternalLink,
+  Crown, RefreshCw, CreditCard, CalendarClock,
+} from "lucide-react";
+import { format } from "date-fns";
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+type TagEntitlement = {
+  id: string;
+  qr_code_id: string;
+  entitlement_type: EntitlementType;
+  status: EntitlementStatus;
+  current_period_end: string | null;
+  grace_period_end: string | null;
+  created_at: string;
+  qr_codes: {
+    short_id: string;
+    pet_id: string | null;
+    pets: { name: string; id: string } | null;
+  } | null;
+};
+
+async function getEntitlements(userId: string): Promise<TagEntitlement[]> {
+  const { data, error } = await supabase
+    .from("tag_entitlements")
+    .select(`
+      id,
+      qr_code_id,
+      entitlement_type,
+      status,
+      current_period_end,
+      grace_period_end,
+      created_at,
+      qr_codes!inner (
+        short_id,
+        pet_id,
+        pets ( name, id )
+      )
+    `)
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return (data ?? []) as unknown as TagEntitlement[];
+}
 
 export default function Billing() {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
+  const [portalLoading, setPortalLoading] = useState(false);
 
-  const { data: tags, isLoading } = useQuery({
-    queryKey: ["user-tags", user?.id],
-    queryFn: () => getUserTagsSummary(user!.id),
+  const { data: entitlements, isLoading } = useQuery({
+    queryKey: ["entitlements", user?.id],
+    queryFn: () => getEntitlements(user!.id),
     enabled: !!user?.id,
     staleTime: 30_000,
   });
 
-  const assignedTags = tags?.filter((t) => t.is_assigned) ?? [];
-  const unassignedTags = tags?.filter((t) => !t.is_assigned) ?? [];
+  async function openBillingPortal() {
+    if (!session) return;
+    setPortalLoading(true);
+    try {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/create-billing-portal`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+          Apikey: SUPABASE_ANON_KEY,
+        },
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch {
+      // silent fail
+    } finally {
+      setPortalLoading(false);
+    }
+  }
+
+  const activeEntitlements = entitlements?.filter(
+    (e) => e.status === "active" || e.entitlement_type === "lifetime"
+  ) ?? [];
+  const inactiveEntitlements = entitlements?.filter(
+    (e) => e.status !== "active" && e.entitlement_type !== "lifetime"
+  ) ?? [];
 
   if (!user) {
     return (
@@ -49,12 +126,27 @@ export default function Billing() {
             View and manage all your PawTrace tags
           </p>
         </div>
-        <Button asChild className="gap-2 transition-all hover:scale-105">
-          <Link to="/pricing">
-            <ShoppingBag className="h-4 w-4" />
-            Buy More Tags
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={openBillingPortal}
+            disabled={portalLoading || !entitlements?.length}
+          >
+            {portalLoading ? (
+              <RefreshCw className="h-4 w-4 animate-spin" />
+            ) : (
+              <CreditCard className="h-4 w-4" />
+            )}
+            Manage Billing
+          </Button>
+          <Button asChild className="gap-2 transition-all hover:scale-105">
+            <Link to="/pricing">
+              <ShoppingBag className="h-4 w-4" />
+              Buy Tags
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -74,7 +166,7 @@ export default function Billing() {
             </Card>
           ))}
         </div>
-      ) : !tags || tags.length === 0 ? (
+      ) : !entitlements || entitlements.length === 0 ? (
         <Card className="shadow-lg">
           <CardContent className="py-12 text-center space-y-4">
             <div className="flex justify-center">
@@ -98,33 +190,37 @@ export default function Billing() {
         </Card>
       ) : (
         <div className="space-y-6">
-          <SummaryBar total={tags.length} assigned={assignedTags.length} unassigned={unassignedTags.length} />
+          <SummaryBar
+            total={entitlements.length}
+            active={activeEntitlements.length}
+            inactive={inactiveEntitlements.length}
+          />
 
-          {unassignedTags.length > 0 && (
+          {activeEntitlements.length > 0 && (
             <div className="space-y-3">
               <h2 className="text-lg font-semibold flex items-center gap-2">
-                <Unlink className="h-4 w-4 text-muted-foreground" />
-                Unassigned Tags
-                <Badge variant="secondary" className="ml-1">{unassignedTags.length}</Badge>
+                <LinkIcon className="h-4 w-4 text-muted-foreground" />
+                Active Tags
+                <Badge variant="secondary" className="ml-1">{activeEntitlements.length}</Badge>
               </h2>
               <div className="grid gap-3 sm:grid-cols-2">
-                {unassignedTags.map((tag) => (
-                  <UnassignedTagCard key={tag.qr_id} tag={tag} />
+                {activeEntitlements.map((ent) => (
+                  <EntitlementCard key={ent.id} entitlement={ent} />
                 ))}
               </div>
             </div>
           )}
 
-          {assignedTags.length > 0 && (
+          {inactiveEntitlements.length > 0 && (
             <div className="space-y-3">
               <h2 className="text-lg font-semibold flex items-center gap-2">
-                <LinkIcon className="h-4 w-4 text-muted-foreground" />
-                Assigned Tags
-                <Badge variant="secondary" className="ml-1">{assignedTags.length}</Badge>
+                <Unlink className="h-4 w-4 text-muted-foreground" />
+                Inactive Tags
+                <Badge variant="secondary" className="ml-1">{inactiveEntitlements.length}</Badge>
               </h2>
               <div className="grid gap-3 sm:grid-cols-2">
-                {assignedTags.map((tag) => (
-                  <AssignedTagCard key={tag.qr_id} tag={tag} />
+                {inactiveEntitlements.map((ent) => (
+                  <EntitlementCard key={ent.id} entitlement={ent} />
                 ))}
               </div>
             </div>
@@ -135,7 +231,7 @@ export default function Billing() {
   );
 }
 
-function SummaryBar({ total, assigned, unassigned }: { total: number; assigned: number; unassigned: number }) {
+function SummaryBar({ total, active, inactive }: { total: number; active: number; inactive: number }) {
   return (
     <div className="grid grid-cols-3 gap-3">
       <Card>
@@ -146,78 +242,75 @@ function SummaryBar({ total, assigned, unassigned }: { total: number; assigned: 
       </Card>
       <Card>
         <CardContent className="p-4 text-center">
-          <p className="text-2xl font-bold text-green-600">{assigned}</p>
-          <p className="text-xs text-muted-foreground">Assigned</p>
+          <p className="text-2xl font-bold text-green-600">{active}</p>
+          <p className="text-xs text-muted-foreground">Active</p>
         </CardContent>
       </Card>
       <Card>
         <CardContent className="p-4 text-center">
-          <p className="text-2xl font-bold text-amber-600">{unassigned}</p>
-          <p className="text-xs text-muted-foreground">Unassigned</p>
+          <p className="text-2xl font-bold text-amber-600">{inactive}</p>
+          <p className="text-xs text-muted-foreground">Inactive</p>
         </CardContent>
       </Card>
     </div>
   );
 }
 
-function AssignedTagCard({ tag }: { tag: UserTag }) {
-  return (
-    <Card className="transition-all hover:shadow-md">
-      <CardContent className="p-4">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center shrink-0">
-            <PawPrint className="h-5 w-5 text-green-600 dark:text-green-400" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-medium truncate">{tag.assigned_pet_name}</p>
-            <p className="text-xs text-muted-foreground font-mono">{tag.short_id}</p>
-          </div>
-          <div className="flex flex-col items-end gap-1">
-            <Badge variant="default" className="text-xs gap-1">
-              <LinkIcon className="h-3 w-3" />
-              Linked
-            </Badge>
-            <Badge variant="secondary" className="text-xs capitalize">
-              {tag.tag_type}
-            </Badge>
-          </div>
-        </div>
-        <div className="mt-3 flex justify-end">
-          <Button asChild size="sm" variant="outline" className="gap-1.5 text-xs">
-            <Link to={`/p/${tag.short_id}`}>
-              <ExternalLink className="h-3 w-3" />
-              View Profile
-            </Link>
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+function EntitlementCard({ entitlement }: { entitlement: TagEntitlement }) {
+  const pet = entitlement.qr_codes?.pets;
+  const shortId = entitlement.qr_codes?.short_id ?? "---";
+  const isLifetime = entitlement.entitlement_type === "lifetime";
+  const isActive = entitlement.status === "active" || isLifetime;
 
-function UnassignedTagCard({ tag }: { tag: UserTag }) {
   return (
-    <Card className="transition-all hover:shadow-md border-amber-200/50 dark:border-amber-800/30">
+    <Card className={`transition-all hover:shadow-md ${!isActive ? "border-amber-200/50 dark:border-amber-800/30 opacity-75" : ""}`}>
       <CardContent className="p-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center shrink-0">
-            <Tag className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+          <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${
+            isLifetime
+              ? "bg-amber-100 dark:bg-amber-900/30"
+              : isActive
+                ? "bg-green-100 dark:bg-green-900/30"
+                : "bg-slate-100 dark:bg-slate-800/30"
+          }`}>
+            {isLifetime ? (
+              <Crown className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+            ) : pet ? (
+              <PawPrint className="h-5 w-5 text-green-600 dark:text-green-400" />
+            ) : (
+              <Tag className="h-5 w-5 text-slate-500 dark:text-slate-400" />
+            )}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-medium">Available Tag</p>
-            <p className="text-xs text-muted-foreground font-mono">{tag.short_id}</p>
+            <p className="font-medium truncate">
+              {pet?.name ?? "Unassigned Tag"}
+            </p>
+            <p className="text-xs text-muted-foreground font-mono">{shortId}</p>
           </div>
-          <Badge variant="outline" className="text-xs gap-1">
-            <Unlink className="h-3 w-3" />
-            Unassigned
+          <Badge variant={getStatusBadgeVariant(entitlement.status)} className="text-xs">
+            {getStatusLabel(entitlement.status, entitlement.entitlement_type)}
           </Badge>
         </div>
-        <div className="mt-3 flex justify-end">
-          <Button asChild size="sm" className="gap-1.5 text-xs">
-            <Link to="/dashboard">
-              Assign to Pet
-            </Link>
-          </Button>
+
+        <div className="mt-3 flex items-center justify-between">
+          <div className="text-xs text-muted-foreground flex items-center gap-1">
+            <CalendarClock className="h-3 w-3" />
+            {isLifetime ? (
+              "Never expires"
+            ) : entitlement.current_period_end ? (
+              `Renews ${format(new Date(entitlement.current_period_end), "MMM d, yyyy")}`
+            ) : (
+              "No renewal date"
+            )}
+          </div>
+          {pet && (
+            <Button asChild size="sm" variant="outline" className="gap-1.5 text-xs">
+              <Link to={`/p/${shortId}`}>
+                <ExternalLink className="h-3 w-3" />
+                View
+              </Link>
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>
