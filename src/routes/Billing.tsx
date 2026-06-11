@@ -82,7 +82,11 @@ export default function Billing() {
       });
       const data = await res.json();
       if (data.url) {
-        window.location.href = data.url;
+        if (window.top !== window.self) {
+          window.open(data.url, "_blank");
+        } else {
+          window.location.href = data.url;
+        }
       }
     } catch {
       // silent fail
