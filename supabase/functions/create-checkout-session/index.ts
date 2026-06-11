@@ -115,10 +115,15 @@ Deno.serve(async (req: Request) => {
       JSON.stringify({ url: session.url }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (e) {
-    console.error("create-checkout-session error:", e);
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    const stripeCode = (e as { code?: string })?.code;
     return new Response(
-      JSON.stringify({ error: "Internal server error" }),
+      JSON.stringify({
+        error: msg,
+        stripe_code: stripeCode ?? null,
+        hint: "Check that STRIPE_SECRET_KEY and STRIPE_PRICE_* secrets are valid and from the same Stripe mode (test vs live).",
+      }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
