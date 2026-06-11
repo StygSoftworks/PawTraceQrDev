@@ -43,7 +43,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
             saveThemePreference(data.theme_preset, data.dark_mode_enabled);
           }
         } catch (err) {
-          console.error('Failed to load theme from database:', err);
         }
       }
 
@@ -113,7 +112,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
         if (error) throw error;
       } catch (err) {
-        console.error('Failed to save theme to database:', err);
       }
     }
   };

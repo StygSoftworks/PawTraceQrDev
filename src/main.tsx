@@ -1,7 +1,10 @@
 import React, { Suspense, lazy } from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { BillingSuccess, BillingCancel } from "./routes/BillingResult";
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+
 const AppLayout = lazy(() => import("./routes/AppLayout"));
 const Home = lazy(() => import("./routes/Home"));
 const Dashboard = lazy(() => import("./routes/Dashboard"));
@@ -24,7 +27,7 @@ const About = lazy(() => import("./routes/About"));
 const Contact = lazy(() => import("./routes/Contact"));
 const Onboard = lazy(() => import("./routes/Onboard"));
 const CheckEmail = lazy(() => import("./routes/CheckEmail"));
-
+const NotFound = lazy(() => import("./routes/NotFound"));
 
 import "./index.css";
 import { AuthProvider } from "./auth/AuthProvider";
@@ -50,56 +53,60 @@ const queryClient = new QueryClient({
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <QueryClientProvider client={queryClient}>
-          <ThemeProvider>
-            <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading…</div>}>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AuthProvider>
+          <QueryClientProvider client={queryClient}>
+            <ThemeProvider>
+              <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading...</div>}>
+                <Routes>
+                  {/* App shell - public routes */}
+                  <Route element={<AppLayout />}>
+                    <Route index element={<Home />} />
+                    <Route path="signin" element={<SignIn />} />
+                    <Route path="register" element={<Register />} />
+                    <Route path="privacy" element={<Privacy />} />
+                    <Route path="terms" element={<Terms />} />
+                    <Route path="forgot-password" element={<ForgotPassword />} />
+                    <Route path="reset-password" element={<ResetPassword />} />
+                    <Route path="reviews" element={<Reviews />} />
+                    <Route path="pricing" element={<Pricing />} />
+                    <Route path="about" element={<About />} />
+                    <Route path="contact" element={<Contact />} />
 
-            <Routes>
-              {/* Private app shell */}
-              <Route element={<AppLayout />}>
-                <Route index element={<Home />} />
-                <Route path="dashboard" element={<Dashboard />} />
-                <Route path="signin" element={<SignIn />} />
-                <Route path="register" element={<Register />} />
-                <Route path="account" element={<Account />} />
-                <Route path="privacy" element={<Privacy />} />
-                <Route path="terms" element={<Terms />} />
-                <Route path="forgot-password" element={<ForgotPassword />} />
-                <Route path="reset-password" element={<ResetPassword />} />
-                <Route path="feedback" element={<Feedback />} />
-                <Route path="reviews" element={<Reviews />} />
-                <Route path="reviews/moderation" element={<Navigate to="/admin/reviews" replace />} />
-                <Route path="admin/pets" element={<AdminPets />} />
-                <Route path="admin/reviews" element={<ReviewsModeration />} />
-                <Route path="admin/qr-export" element={<AdminQRExport />} />
-                <Route path="pricing" element={<Pricing />} />
-                <Route path="billing/success" element={<BillingSuccess />} />
-                <Route path="billing/cancel" element={<BillingCancel />} />
-                <Route path="billing" element={<Billing />} />
-                <Route path="about" element={<About />} />
-                <Route path="contact" element={<Contact />} />
-              </Route>
+                    {/* Protected routes - require auth */}
+                    <Route element={<ProtectedRoute />}>
+                      <Route path="dashboard" element={<Dashboard />} />
+                      <Route path="account" element={<Account />} />
+                      <Route path="feedback" element={<Feedback />} />
+                      <Route path="billing" element={<Billing />} />
+                      <Route path="billing/success" element={<BillingSuccess />} />
+                      <Route path="billing/cancel" element={<BillingCancel />} />
+                      <Route path="admin/pets" element={<AdminPets />} />
+                      <Route path="admin/reviews" element={<ReviewsModeration />} />
+                      <Route path="admin/qr-export" element={<AdminQRExport />} />
+                    </Route>
 
-              {/* Public QR landing page (no auth, no AppLayout) */}
-              <Route path="/p/:id" element={<PublicPet />} />
+                    {/* 404 */}
+                    <Route path="*" element={<NotFound />} />
+                  </Route>
 
-              {/* Onboarding flow for new tag scans */}
-              <Route path="/onboard/:id" element={<Onboard />} />
+                  {/* Public QR landing page (no AppLayout) */}
+                  <Route path="/p/:id" element={<PublicPet />} />
 
-              {/* Email verification page */}
-              <Route path="/check-email" element={<CheckEmail />} />
+                  {/* Onboarding flow for new tag scans */}
+                  <Route path="/onboard/:id" element={<Onboard />} />
 
-              {/* (optional) catch-all */}
-              {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
-            </Routes>
-            </Suspense>
+                  {/* Email verification page */}
+                  <Route path="/check-email" element={<CheckEmail />} />
+                </Routes>
+              </Suspense>
 
-            {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
-          </ThemeProvider>
-        </QueryClientProvider>
-      </AuthProvider>
-    </BrowserRouter>
+              {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+            </ThemeProvider>
+          </QueryClientProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   </React.StrictMode>
 );

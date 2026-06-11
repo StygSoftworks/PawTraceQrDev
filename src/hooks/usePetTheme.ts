@@ -28,7 +28,6 @@ export function usePetTheme(petId: string | undefined) {
           setThemeId(DEFAULT_THEME);
         }
       } catch (err) {
-        console.error('Failed to load pet theme:', err);
         setThemeId(DEFAULT_THEME);
       } finally {
         setIsLoading(false);
@@ -54,7 +53,6 @@ export function usePetTheme(petId: string | undefined) {
 
       if (error) throw error;
     } catch (err) {
-      console.error('Failed to save pet theme:', err);
     }
   };
 

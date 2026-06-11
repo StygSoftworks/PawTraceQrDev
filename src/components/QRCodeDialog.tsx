@@ -171,7 +171,6 @@ export function QRCodeDialog({ pet, open, onOpenChange }: QRCodeDialogProps) {
       const timestamp = new Date().toISOString().split('T')[0];
       downloadPdfBlob(pdfBlob, `${pet.name}-qr-${qrShape}-${timestamp}.pdf`);
     } catch (e) {
-      console.error("PDF generation error:", e);
       alert("Failed to generate PDF");
     } finally {
       setIsExportingPdf(false);

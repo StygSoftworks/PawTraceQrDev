@@ -23,13 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Mail,
-  Send,
-  CheckCircle,
-  AlertCircle,
-  MessageSquare,
-} from "lucide-react";
+import { Mail, Send, CircleCheck as CheckCircle, CircleAlert as AlertCircle, MessageSquare } from "lucide-react";
 
 const ContactSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(100),
@@ -106,7 +100,6 @@ export default function Contact() {
 
       reset();
     } catch (error) {
-      console.error("Error submitting contact form:", error);
       setSubmitStatus({
         type: "error",
         message:

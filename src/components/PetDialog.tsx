@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/command";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ChevronsUpDown, PawPrint, Palette, Calendar, Weight, FileText, Syringe, Camera, CircleAlert as AlertCircle, Sparkles, Check, Home } from "lucide-react";
+import { ChevronsUpDown, PawPrint, Palette, Calendar, Weight, FileText, Syringe, Camera, CircleAlert as AlertCircle, Sparkles, Check, Hop as Home } from "lucide-react";
 import {
   DOG_BREED_NAMES,
   CAT_PATTERN_NAMES,
@@ -220,7 +220,6 @@ export function PetDialog({ mode, open, onOpenChange, initialPet, onSubmit }: Pr
       onOpenChange(false);
       if (mode === "add") form.reset();
     } catch (err: any) {
-      console.error(err);
       alert(err?.message ?? "Failed to save pet");
     } finally {
       setSubmitting(false);

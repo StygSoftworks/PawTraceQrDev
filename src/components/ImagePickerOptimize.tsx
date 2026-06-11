@@ -76,7 +76,6 @@ export function ImagePickerOptimize({
         onChange(result);
       } catch (err) {
         setError("Failed to optimize image. Please try another file.");
-        console.error("Image optimization error:", err);
       } finally {
         setIsOptimizing(false);
       }

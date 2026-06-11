@@ -33,17 +33,13 @@ export async function createPetWithSpecificTag(
 
     if (petError) throw petError;
 
-    const { error: finalizeError } = await supabase.rpc(
+    await supabase.rpc(
       "finalize_qr_assignment",
       {
         p_qr_id: claimedQr.qr_id,
         p_pet_id: pet.id,
       }
     );
-
-    if (finalizeError) {
-      console.error("Failed to finalize QR assignment:", finalizeError);
-    }
 
     return pet;
   } catch (error) {
@@ -65,11 +61,10 @@ export async function createPetWithPhotoAndTag(
       pet.id,
       photoBlob
     );
-    const { error } = await supabase
+    await supabase
       .from("pets")
       .update({ photo_url: publicUrl })
       .eq("id", pet.id);
-    if (error) console.error("Failed to update photo:", error);
     return { ...pet, photo_url: publicUrl };
   }
 

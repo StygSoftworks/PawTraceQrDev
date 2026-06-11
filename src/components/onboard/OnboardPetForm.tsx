@@ -110,7 +110,6 @@ export function OnboardPetForm({ shortId, onComplete }: Props) {
 
       onComplete(shortId);
     } catch (err: any) {
-      console.error(err);
       setServerError(err?.message ?? "Failed to create pet profile");
     } finally {
       setSubmitting(false);

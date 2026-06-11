@@ -7,7 +7,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
-const ADMIN_EMAIL = "collin@stygiansoftworks.com";
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -52,7 +51,6 @@ Deno.serve(async (req: Request) => {
       .single();
 
     if (dbError) {
-      console.error("Database error:", dbError);
       return new Response(
         JSON.stringify({ error: "Failed to save message" }),
         {
@@ -64,36 +62,6 @@ Deno.serve(async (req: Request) => {
         }
       );
     }
-
-    const emailBody = `
-New Contact Form Submission
-============================
-
-Reference ID: ${messageData.id}
-
-From: ${name}
-Email: ${email}
-${phone ? `Phone: ${phone}\n` : ""}Subject: ${subject}
-${user_id ? `User ID: ${user_id}\n` : "Anonymous User\n"}
-Submitted: ${new Date(messageData.created_at).toLocaleString()}
-
-Message:
---------
-${message}
-
-============================
-Reply to this email to respond to the user.
-    `;
-
-    console.log("Contact form submission received:", {
-      id: messageData.id,
-      name,
-      email,
-      subject,
-    });
-
-    console.log("Email would be sent to:", ADMIN_EMAIL);
-    console.log("Email body:", emailBody);
 
     return new Response(
       JSON.stringify({
@@ -110,7 +78,6 @@ Reply to this email to respond to the user.
       }
     );
   } catch (error) {
-    console.error("Error processing contact form:", error);
     return new Response(
       JSON.stringify({
         error: error instanceof Error ? error.message : "Internal server error",

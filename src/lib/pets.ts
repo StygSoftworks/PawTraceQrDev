@@ -100,7 +100,6 @@ export async function createPet(payload: PetInsert) {
       });
 
     if (finalizeError) {
-      console.error("Failed to finalize QR assignment:", finalizeError);
     }
 
     return pet;
@@ -130,7 +129,6 @@ export async function updatePet(id: string, patch: Record<string, any>) {
 
   // If SELECT is blocked by RLS, just return the patched shape
   if (selErr) {
-    console.warn("updatePet: select after update blocked by RLS:", selErr?.message);
     return { id, ...patch };
   }
 
@@ -178,7 +176,6 @@ export async function uploadPetPhoto(ownerId: string, petId: string, blob: Blob)
     .upload(path, blob, { contentType: mime, upsert: false }); // Change to false
 
   if (error) {
-    console.error("storage.upload error:", error);
     throw error;
   }
 
@@ -205,7 +202,6 @@ export async function deletePetPhotoByUrl(photoUrl?: string | null) {
   const { error } = await supabase.storage.from("pet-photos").remove([path]);
   if (error) {
     // don't throw: we don't want to block the UI if image removal fails
-    console.warn("storage.remove warning:", error.message);
   }
 }
 

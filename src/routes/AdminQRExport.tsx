@@ -18,7 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Download, Square, Circle, AlertCircle, CheckCircle, FileText } from "lucide-react";
+import { Download, Square, Circle, CircleAlert as AlertCircle, CircleCheck as CheckCircle, FileText } from "lucide-react";
 
 export default function AdminQRExport() {
   const { role, isAdmin, isLoading: roleLoading } = useAdminCheck();
@@ -70,7 +70,6 @@ export default function AdminQRExport() {
         }
         setPreviewSvg(svg);
       } catch (error) {
-        console.error("Preview generation error:", error);
         setPreviewSvg(null);
       }
     }

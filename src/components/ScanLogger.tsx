@@ -22,7 +22,6 @@ export function ScanLogger({ shortId }: { shortId: string | undefined }) {
           p_scanned_by: user?.id ?? null,
         });
       } catch (e) {
-        console.warn("log_scan failed:", e);
       }
     };
     run();
