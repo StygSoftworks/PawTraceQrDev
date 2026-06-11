@@ -1,5 +1,5 @@
 export const PRICE_ANNUAL = 8;
-export const PRICE_LIFETIME = 60;
+export const PRICE_LIFETIME = 40;
 export const PRICE_REPLACEMENT = 5;
 export const TAG_CURRENCY = "USD";
 

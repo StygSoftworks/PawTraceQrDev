@@ -88,7 +88,7 @@ async function handleCheckoutCompleted(
     .update({
       purchased_by: userId,
       purchased_at: new Date().toISOString(),
-      purchase_price: purchaseType === "annual" ? 8 : purchaseType === "lifetime" ? 60 : 5,
+      purchase_price: purchaseType === "annual" ? 8 : purchaseType === "lifetime" ? 40 : 5,
     })
     .eq("id", reserved.qr_id);
 
