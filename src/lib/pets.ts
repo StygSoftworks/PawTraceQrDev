@@ -49,17 +49,6 @@ export type PetRow = {
 };
 
 export type PetUpdate = Partial<PetInsert> & { id: string };
-/*
-export async function createPet(data: PetInsert) {
-  const { data: rows, error } = await supabase
-    .from("pets")
-    .insert(data)
-    .select()
-    .single();
-  if (error) throw error;
-  return rows; // returns inserted pet row
-}
-*/
 
 
 export async function createPet(payload: PetInsert) {
@@ -99,6 +88,7 @@ export async function createPet(payload: PetInsert) {
       });
 
     if (finalizeError) {
+      throw new Error(`QR finalization failed: ${finalizeError.message}`);
     }
 
     return pet;
@@ -144,18 +134,6 @@ export async function listPetsByOwner(ownerId: string) {
   if (error) throw error;
   return (data ?? []) as PetRow[];
 }
-
-/*
-// Convert a data URL to a Blob object
-function extFromMime(mime?: string) {
-  const m = mime || "image/webp";
-  if (m === "image/jpeg" || m === "image/jpg") return "jpg";
-  if (m === "image/png") return "png";
-  if (m === "image/avif") return "avif";
-  if (m === "image/webp") return "webp";
-  return m.split("/")[1] || "webp";
-}
-  */
 
 export async function uploadPetPhoto(ownerId: string, petId: string, blob: Blob) {
   if (!blob || blob.size === 0) throw new Error("Empty image blob");

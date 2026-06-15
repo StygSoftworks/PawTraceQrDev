@@ -33,13 +33,17 @@ export async function createPetWithSpecificTag(
 
     if (petError) throw petError;
 
-    await supabase.rpc(
+    const { error: finalizeError } = await supabase.rpc(
       "finalize_qr_assignment",
       {
         p_qr_id: claimedQr.qr_id,
         p_pet_id: pet.id,
       }
     );
+
+    if (finalizeError) {
+      throw new Error(`QR finalization failed: ${finalizeError.message}`);
+    }
 
     return pet;
   } catch (error) {

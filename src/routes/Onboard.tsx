@@ -60,8 +60,9 @@ export default function Onboard() {
     setStep("choose");
   };
 
-  const handlePetCreated = (shortId: string) => {
+  const handlePetCreated = (shortId: string, petName: string) => {
     setCreatedShortId(shortId);
+    setAssignedPetName(petName);
     setStep("done");
   };
 
@@ -165,7 +166,21 @@ export default function Onboard() {
               <OnboardAuth onComplete={handleAuthComplete} shortId={id} />
             )}
 
-            {step === "choose" && hasPets && id && (
+            {step === "choose" && id && petsLoading && (
+              <Card className="shadow-xl animate-in fade-in-50 duration-300">
+                <CardContent className="p-6 space-y-4">
+                  <Skeleton className="h-6 w-48 mx-auto" />
+                  <Skeleton className="h-4 w-64 mx-auto" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-16 w-full rounded-lg" />
+                    <Skeleton className="h-16 w-full rounded-lg" />
+                  </div>
+                  <Skeleton className="h-12 w-full rounded-lg" />
+                </CardContent>
+              </Card>
+            )}
+
+            {step === "choose" && hasPets && id && !petsLoading && (
               <Card className="shadow-xl animate-in fade-in-50 slide-in-from-bottom-4 duration-500">
                 <CardHeader className="text-center space-y-2">
                   <CardTitle className="text-2xl">What would you like to do?</CardTitle>

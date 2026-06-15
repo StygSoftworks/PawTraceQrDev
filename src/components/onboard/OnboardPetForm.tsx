@@ -42,7 +42,7 @@ type FormValues = z.infer<typeof QuickPetSchema>;
 
 type Props = {
   shortId: string;
-  onComplete: (shortId: string) => void;
+  onComplete: (shortId: string, petName: string) => void;
 };
 
 export function OnboardPetForm({ shortId, onComplete }: Props) {
@@ -85,11 +85,7 @@ export function OnboardPetForm({ shortId, onComplete }: Props) {
     setServerError(null);
 
     try {
-      let photoBlob = optimizedBlobRef.current;
-      if (!photoBlob && values.photoPreview) {
-        const res = await fetch(values.photoPreview);
-        photoBlob = await res.blob();
-      }
+      const photoBlob = optimizedBlobRef.current ?? null;
 
       await createPetWithPhotoAndTag(
         {
@@ -108,7 +104,7 @@ export function OnboardPetForm({ shortId, onComplete }: Props) {
         await updateProfile.mutateAsync({ has_created_first_pet: true });
       }
 
-      onComplete(shortId);
+      onComplete(shortId, values.name);
     } catch (err: any) {
       setServerError(err?.message ?? "Failed to create pet profile");
     } finally {
