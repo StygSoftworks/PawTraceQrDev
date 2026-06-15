@@ -69,6 +69,10 @@ Deno.serve(async (req: Request) => {
         .from("profiles")
         .update({ stripe_customer_id: customer.id })
         .eq("id", user.id);
+
+      await svc
+        .from("stripe_customers")
+        .upsert({ user_id: user.id, customer_id: customer.id }, { onConflict: "user_id" });
     }
 
     const priceId = getPriceId(type);

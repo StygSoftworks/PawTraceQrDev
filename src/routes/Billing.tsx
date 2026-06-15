@@ -2,21 +2,19 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/auth/AuthProvider";
-import { supabase } from "@/lib/supabase";
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/supabase";
 import { getStatusBadgeVariant, getStatusLabel } from "@/config/billing";
 import type { EntitlementType, EntitlementStatus } from "@/config/billing";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Tag, PawPrint, ShoppingBag, Link as LinkIcon, Unlink, ExternalLink,
-  Crown, RefreshCw, CreditCard, CalendarClock,
+  Crown, RefreshCw, CreditCard, CalendarClock, CircleAlert as AlertCircle,
 } from "lucide-react";
 import { format } from "date-fns";
-
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 type TagEntitlement = {
   id: string;
@@ -60,6 +58,7 @@ async function getEntitlements(userId: string): Promise<TagEntitlement[]> {
 export default function Billing() {
   const { user, session } = useAuth();
   const [portalLoading, setPortalLoading] = useState(false);
+  const [portalError, setPortalError] = useState<string | null>(null);
 
   const { data: entitlements, isLoading } = useQuery({
     queryKey: ["entitlements", user?.id],
@@ -71,6 +70,7 @@ export default function Billing() {
   async function openBillingPortal() {
     if (!session) return;
     setPortalLoading(true);
+    setPortalError(null);
     try {
       const res = await fetch(`${SUPABASE_URL}/functions/v1/create-billing-portal`, {
         method: "POST",
@@ -87,9 +87,11 @@ export default function Billing() {
         } else {
           window.location.href = data.url;
         }
+      } else {
+        setPortalError("Could not open billing portal. Please try again.");
       }
     } catch {
-      // silent fail
+      setPortalError("Could not connect to billing service. Please try again.");
     } finally {
       setPortalLoading(false);
     }
@@ -152,6 +154,13 @@ export default function Billing() {
           </Button>
         </div>
       </div>
+
+      {portalError && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{portalError}</AlertDescription>
+        </Alert>
+      )}
 
       {isLoading ? (
         <div className="space-y-4">

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/auth/AuthProvider";
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/supabase";
 import { PRICE_ANNUAL, PRICE_LIFETIME, PRICE_REPLACEMENT } from "@/config/billing";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,9 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   Check, QrCode, Tag, Shield, RefreshCw, CircleAlert as AlertCircle, Crown, Zap,
 } from "lucide-react";
-
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export default function Pricing() {
   const { user, session } = useAuth();

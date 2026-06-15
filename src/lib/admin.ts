@@ -21,7 +21,6 @@ export type AdminPetRow = {
   short_id: string;
   tag_type: "dog" | "cat";
   environment: "indoor" | "outdoor" | "indoor_outdoor";
-  paypal_subscription_id: string | null;
   subscription_status: "active" | "inactive" | "expired" | "cancelled" | "pending";
   subscription_activated_at: string | null;
   subscription_expires_at: string | null;

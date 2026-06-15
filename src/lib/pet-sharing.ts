@@ -174,7 +174,6 @@ export async function getSharedPets() {
         short_id,
         tag_type,
         environment,
-        paypal_subscription_id,
         subscription_status,
         subscription_activated_at,
         subscription_expires_at,

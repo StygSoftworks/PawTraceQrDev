@@ -150,7 +150,6 @@ export default function AdminPets() {
       short_id: pet.short_id,
       tag_type: pet.tag_type,
       environment: pet.environment,
-      paypal_subscription_id: pet.paypal_subscription_id,
       subscription_status: pet.subscription_status,
       subscription_activated_at: pet.subscription_activated_at,
       subscription_expires_at: pet.subscription_expires_at,
