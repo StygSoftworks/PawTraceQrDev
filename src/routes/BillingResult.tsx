@@ -15,7 +15,7 @@ export function BillingSuccess() {
             <div className="space-y-2">
               <h1 className="text-2xl font-bold tracking-tight">Purchase Complete</h1>
               <p className="text-muted-foreground">
-                Your tag has been added to your account and is ready to assign to a pet.
+                Your tag has been added to your account. Head to your dashboard to link it to a pet.
               </p>
             </div>
           </div>
@@ -59,7 +59,7 @@ export function BillingCancel() {
         <CardContent className="p-6">
           <Button asChild variant="outline" className="w-full gap-2 h-11">
             <Link to="/pricing">
-              Try Again
+              Return to Pricing
             </Link>
           </Button>
         </CardContent>

@@ -279,7 +279,7 @@ export default function Feedback() {
       <div className="text-center mb-10 space-y-2">
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Feedback</h1>
         <p className="text-muted-foreground">
-          Share your experience with PawTrace. Reviews appear publicly after moderation.
+          Share your experience with PawTrace. Your feedback helps us improve and helps other pet owners decide.
         </p>
       </div>
 
@@ -295,7 +295,7 @@ export default function Feedback() {
           <Card>
             <CardHeader>
               <CardTitle>Leave a review</CardTitle>
-              <CardDescription>Rate PawTrace and add a short comment.</CardDescription>
+              <CardDescription>Rate your experience and tell us what you think.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
               {createMut.isError && (
@@ -333,7 +333,7 @@ export default function Feedback() {
                 <Label htmlFor="comment">Comment</Label>
                 <Textarea
                   id="comment"
-                  placeholder="What do you like? What should we improve?"
+                  placeholder="What's working well? What could be better?"
                   rows={5}
                   {...register("comment")}
                 />
@@ -432,7 +432,7 @@ export default function Feedback() {
               </div>
             ) : (
               <Card className="p-6">
-                <CardDescription>You haven’t written any reviews yet.</CardDescription>
+                <CardDescription>You haven’t written any reviews yet. Share your thoughts above!</CardDescription>
               </Card>
             )}
           </div>
@@ -495,7 +495,7 @@ export default function Feedback() {
             </div>
           ) : (
             <Card className="p-6">
-              <CardDescription>No public reviews yet. Be the first to share your experience!</CardDescription>
+              <CardDescription>No reviews yet. Be the first to share your experience!</CardDescription>
             </Card>
           )}
         </TabsContent>

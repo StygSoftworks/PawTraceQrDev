@@ -120,7 +120,7 @@ export default function Onboard() {
                 <div>
                   <CardTitle className="text-2xl">Tag Unavailable</CardTitle>
                   <CardDescription className="text-base">
-                    This tag has already been claimed or is no longer available.
+                    This tag is already linked to another pet or is no longer available. If you own this tag, sign in to manage it from your dashboard.
                   </CardDescription>
                 </div>
               </div>
@@ -129,7 +129,7 @@ export default function Onboard() {
               <Button asChild className="gap-2">
                 <Link to="/">
                   <Home className="h-4 w-4" />
-                  Go to Homepage
+                  Back to Homepage
                 </Link>
               </Button>
             </CardContent>
@@ -183,9 +183,9 @@ export default function Onboard() {
             {step === "choose" && hasPets && id && !petsLoading && (
               <Card className="shadow-xl animate-in fade-in-50 slide-in-from-bottom-4 duration-500">
                 <CardHeader className="text-center space-y-2">
-                  <CardTitle className="text-2xl">What would you like to do?</CardTitle>
+                  <CardTitle className="text-2xl">Link this tag to a pet</CardTitle>
                   <CardDescription className="text-base">
-                    Tag <span className="font-mono font-medium">{id}</span> is ready to be linked.
+                    Tag <span className="font-mono font-medium">{id}</span> is ready. Choose an existing pet or create a new one.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -208,7 +208,7 @@ export default function Onboard() {
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">Assign to {pet.name}</p>
+                          <p className="font-medium truncate">Link to {pet.name}</p>
                           <p className="text-xs text-muted-foreground capitalize">
                             {pet.species}
                             {pet.breed ? ` - ${pet.breed}` : ""}

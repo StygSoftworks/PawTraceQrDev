@@ -129,7 +129,7 @@ export default function Billing() {
             My Tags
           </h1>
           <p className="text-muted-foreground mt-1">
-            View and manage all your PawTrace tags
+            View and manage your active and inactive tags
           </p>
         </div>
         <div className="flex gap-2">
@@ -190,7 +190,7 @@ export default function Billing() {
             <div className="space-y-2">
               <p className="text-lg font-medium">No tags yet</p>
               <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-                Purchase a digital tag or scan a physical tag to get started.
+                Once you have a tag, your pet can be found by anyone with a phone. Get one below.
               </p>
             </div>
             <Button asChild className="gap-2 mt-4">

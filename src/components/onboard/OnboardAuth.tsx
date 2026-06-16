@@ -14,8 +14,8 @@ import { CircleAlert as AlertCircle, Eye, EyeOff, UserPlus, LogIn } from "lucide
 const RegisterSchema = z.object({
   name: z.string().min(1, "Please enter your name").max(80),
   email: z.string().email("Enter a valid email"),
-  password: z.string().min(8, "At least 8 characters"),
-  confirm: z.string().min(8, "Please confirm your password"),
+  password: z.string().min(8, "Use 8 or more characters for security"),
+  confirm: z.string().min(8, "Re-enter your password to confirm"),
 }).refine((vals) => vals.password === vals.confirm, {
   path: ["confirm"],
   message: "Passwords do not match",
@@ -95,7 +95,7 @@ export function OnboardAuth({ onComplete, shortId }: Props) {
         </CardTitle>
         <CardDescription className="text-base">
           {mode === "register"
-            ? "Sign up to link this tag to your pet"
+            ? "Create a free account to link this tag to your pet"
             : "Sign in to continue setting up your tag"}
         </CardDescription>
       </CardHeader>
@@ -200,12 +200,12 @@ export function OnboardAuth({ onComplete, shortId }: Props) {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
-                  Creating account...
+                  Creating your account...
                 </span>
               ) : (
                 <>
                   <UserPlus className="h-4 w-4" />
-                  Create Account
+                  Create Free Account
                 </>
               )}
             </Button>
@@ -236,7 +236,7 @@ export function OnboardAuth({ onComplete, shortId }: Props) {
                 id="si-password"
                 type="password"
                 autoComplete="current-password"
-                placeholder="Your password"
+                placeholder="Enter your password"
                 {...signInForm.register("password")}
                 className="h-11"
               />
@@ -259,7 +259,7 @@ export function OnboardAuth({ onComplete, shortId }: Props) {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
-                  Signing in...
+                  Checking your credentials...
                 </span>
               ) : (
                 <>

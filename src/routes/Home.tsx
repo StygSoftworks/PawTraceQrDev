@@ -26,8 +26,8 @@ export default function Home() {
                 Smart Shareable<br /> Pet IDs!
               </h1>
               <p className="text-lg/7 text-white/90">
-                Create a pet profile, we make a QR code and a public page showing
-                basic contact info and if your pet is missing. Easy to scan, easy to share.
+                Create a free pet profile. We generate a QR code anyone can scan to see your
+                contact info and help bring your pet home.
               </p>
               <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
                 <Link to="/register">
@@ -47,21 +47,21 @@ export default function Home() {
               How PawTraceQR Works
             </h3>
             <p className="mt-3 text-muted-foreground">
-              Set up takes minutes. Everything below is available right now.
+              Set up takes under two minutes. Everything below is live right now.
             </p>
           </div>
           <BulletList>
             <Bullet
               title="Create a pet profile"
-              desc="Add name, species (dog/cat/other), pattern/breed, notes, vaccinations, and a photo."
+              desc="Add name, species, breed or pattern, notes, vaccinations, and a photo."
             />
             <Bullet
-              title="We generate a QR + short link"
-              desc="Each pet gets a compact shareable URL and a scannable QR you can print or engrave."
+              title="We generate a QR code and short link"
+              desc="Each pet gets a scannable QR and compact URL you can print, engrave, or share anywhere."
             />
             <Bullet
-              title="Public pet page"
-              desc="Scanners see your pet’s basics and whether they’re marked missing."
+              title="Anyone can scan to contact you"
+              desc="Finders see your pet’s basics, whether they’re lost, and how to reach you -- instantly."
             />
           </BulletList>
         </div>
@@ -80,9 +80,9 @@ export default function Home() {
           </div>
           <BulletList>
             <Bullet title="Short QR links" desc="Compact, scannable links for each pet with a dedicated public page." />
-            <Bullet title="Smart photo optimization" desc="Uploads are optimized in the browser before storing to keep things fast." />
-            <Bullet title="Simple dashboard" desc="Add, edit, or delete pets; upload a photo; and manage details with ease." />
-            <Bullet title="Missing mode toggle" desc="Mark a pet as missing; your public page reflects the status and since-when." />
+            <Bullet title="Smart photo optimization" desc="Photos are optimized in the browser before uploading to keep things fast." />
+            <Bullet title="Simple dashboard" desc="Add, edit, and manage your pets, photos, and tag details in one place." />
+            <Bullet title="Lost pet alerts" desc="Mark a pet as lost with one tap. Your public page instantly shows the alert and when they went missing." />
           </BulletList>
         </div>
       </section>

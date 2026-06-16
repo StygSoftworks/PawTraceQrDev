@@ -30,7 +30,7 @@ export default function CheckEmail() {
           <div className="space-y-1">
             <CardTitle className="text-2xl">Check your email</CardTitle>
             <CardDescription>
-              We sent a confirmation link to <span className="font-semibold text-foreground">{email}</span>
+              We sent a confirmation link to <span className="font-semibold text-foreground">{email}</span> (it may take a minute)
             </CardDescription>
           </div>
         </CardHeader>

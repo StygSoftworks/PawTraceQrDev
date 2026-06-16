@@ -111,7 +111,7 @@ export default function Account() {
     <div className="mx-auto max-w-4xl space-y-6 p-4">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Account Settings</h1>
-        <p className="text-muted-foreground mt-2">Manage your profile, appearance, and security settings</p>
+        <p className="text-muted-foreground mt-2">Manage your profile, appearance, and security</p>
       </div>
 
       <Tabs defaultValue="profile" className="w-full">
@@ -124,7 +124,7 @@ export default function Account() {
           <Card>
             <CardHeader>
               <CardTitle>Profile Information</CardTitle>
-              <CardDescription>Manage your profile and contact details</CardDescription>
+              <CardDescription>Your name, contact info, and what pet finders can see</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid gap-2">
@@ -163,7 +163,7 @@ export default function Account() {
                   <div>
                     <Label className="text-base font-semibold">Privacy & Sharing</Label>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Control what information is visible when someone scans your pet's QR code
+                      Choose what pet finders can see when they scan your tag
                     </p>
                   </div>
                   
@@ -228,7 +228,7 @@ export default function Account() {
                 )}
                 {update.isSuccess && (
                   <Alert>
-                    <AlertDescription>Profile updated successfully.</AlertDescription>
+                    <AlertDescription>Changes saved. They'll appear on your pet pages right away.</AlertDescription>
                   </Alert>
                 )}
 

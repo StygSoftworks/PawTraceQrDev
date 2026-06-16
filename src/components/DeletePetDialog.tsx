@@ -10,7 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { AlertTriangle, Trash2, RefreshCw } from "lucide-react";
+import { TriangleAlert as AlertTriangle, Trash2, RefreshCw } from "lucide-react";
 import { deletePet, deletePetPhotoByUrl } from "@/lib/pets";
 import type { PetRow } from "@/lib/pets";
 
@@ -60,8 +60,8 @@ export function DeletePetDialog({ pet, open, onOpenChange, onDeleted }: DeletePe
             Delete {pet.name}?
           </AlertDialogTitle>
           <AlertDialogDescription>
-            This will permanently remove the pet profile
-            {pet.photo_url ? " and its photo" : ""}. This action cannot be undone.
+            This permanently deletes {pet.name}'s profile
+            {pet.photo_url ? ", photo," : ""} and QR tag link. You cannot undo this.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -79,7 +79,7 @@ export function DeletePetDialog({ pet, open, onOpenChange, onDeleted }: DeletePe
             ) : (
               <>
                 <Trash2 className="h-4 w-4" />
-                Delete
+                Yes, Delete Forever
               </>
             )}
           </AlertDialogAction>

@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MapPin, Loader2, AlertCircle } from "lucide-react";
+import { MapPin, Loader as Loader2, CircleAlert as AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/lib/supabase";
 
@@ -80,13 +80,13 @@ export function LocationShareDialog({
       if (err instanceof GeolocationPositionError) {
         switch (err.code) {
           case err.PERMISSION_DENIED:
-            setError("Location access was denied. Please enable location permissions.");
+            setError("Location blocked by your browser. Tap the lock icon in the address bar to allow access, then try again.");
             break;
           case err.POSITION_UNAVAILABLE:
-            setError("Location information is unavailable.");
+            setError("Your device couldn't determine your location. Try moving to an area with better signal.");
             break;
           case err.TIMEOUT:
-            setError("Location request timed out. Please try again.");
+            setError("Location request timed out. Try again in an open area with better GPS signal.");
             break;
         }
       } else {
@@ -106,8 +106,8 @@ export function LocationShareDialog({
             Share Your Location
           </DialogTitle>
           <DialogDescription>
-            Help reunite {petName} with their owner by sharing where you found them.
-            Your location will be sent securely to the pet owner.
+            Help reunite {petName} with their owner by sharing where you spotted them.
+            Your location is sent securely and only the pet owner can see it.
           </DialogDescription>
         </DialogHeader>
 
@@ -115,7 +115,7 @@ export function LocationShareDialog({
           <Alert className="border-green-500 bg-green-50 dark:bg-green-950">
             <AlertCircle className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-green-600">
-              Location shared successfully! The owner has been notified.
+              Location sent! The owner can now see where you are. Thank you for helping.
             </AlertDescription>
           </Alert>
         ) : (
@@ -126,7 +126,7 @@ export function LocationShareDialog({
               </Label>
               <Textarea
                 id="finder-note"
-                placeholder="e.g., 'Found near the park on Main Street' or 'Your pet is safe with me'"
+                placeholder="e.g., Found them near Oak Park on Main St. They seem healthy and calm."
                 value={finderNote}
                 onChange={(e) => setFinderNote(e.target.value)}
                 rows={3}
@@ -147,7 +147,7 @@ export function LocationShareDialog({
                 maxLength={100}
               />
               <p className="text-xs text-muted-foreground">
-                Share your contact info so the owner can reach you directly
+                Share your contact info so the owner can thank you or coordinate a pickup
               </p>
             </div>
 

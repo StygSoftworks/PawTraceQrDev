@@ -74,8 +74,8 @@ export default function Pricing() {
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">Keep Your Pet Safe</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Choose the plan that works best for you. Every tag gives your pet a digital ID
-            that helps reunite them with you if they ever get lost.
+            Every tag gives your pet a scannable ID. If they wander off,
+            whoever finds them can contact you instantly.
           </p>
         </div>
 

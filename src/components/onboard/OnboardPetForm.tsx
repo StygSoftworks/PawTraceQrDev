@@ -30,8 +30,8 @@ import {
 import { CircleAlert as AlertCircle, PawPrint, ChevronsUpDown, Camera } from "lucide-react";
 
 const QuickPetSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  species: z.enum(["dog", "cat", "other"], { message: "Choose a species" }),
+  name: z.string().min(1, "Your pet needs a name"),
+  species: z.enum(["dog", "cat", "other"], { message: "Select what kind of pet you have" }),
   breed: z.string().optional(),
   color: z.string().optional(),
   description: z.string().optional(),
@@ -120,7 +120,7 @@ export function OnboardPetForm({ shortId, onComplete }: Props) {
         </div>
         <CardTitle className="text-2xl">Tell Us About Your Pet</CardTitle>
         <CardDescription className="text-base">
-          Just the basics -- you can add more details later
+          Just name and species to start. You can add photos and details from your dashboard anytime.
         </CardDescription>
       </CardHeader>
 
@@ -262,7 +262,7 @@ export function OnboardPetForm({ shortId, onComplete }: Props) {
             </Label>
             <Textarea
               id="ob-description"
-              placeholder="Any distinguishing features, personality traits..."
+              placeholder="Any distinguishing features or personality traits..."
               {...form.register("description")}
               className="min-h-[70px] resize-none"
             />
@@ -300,7 +300,7 @@ export function OnboardPetForm({ shortId, onComplete }: Props) {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
-                Setting up your tag...
+                Creating profile and linking tag...
               </span>
             ) : (
               <>
@@ -311,7 +311,7 @@ export function OnboardPetForm({ shortId, onComplete }: Props) {
           </Button>
 
           <p className="text-xs text-center text-muted-foreground">
-            You can add more details like weight, vaccinations, and contact info from your dashboard later.
+            You can add weight, vaccinations, and contact info from your dashboard anytime.
           </p>
         </form>
       </CardContent>

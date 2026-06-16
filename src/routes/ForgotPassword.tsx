@@ -38,8 +38,8 @@ export default function ForgotPassword() {
     <div className="min-h-screen flex items-center justify-center px-4 py-8">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Forgot password</CardTitle>
-          <CardDescription>We’ll email you a secure link to reset it.</CardDescription>
+          <CardTitle>Forgot your password?</CardTitle>
+          <CardDescription>Enter your email and we’ll send you a link to reset it.</CardDescription>
         </CardHeader>
         <CardContent>
           {sent ? (
@@ -71,7 +71,7 @@ export default function ForgotPassword() {
               )}
 
               <Button className="w-full" type="submit" disabled={loading}>
-                {loading ? "Sending…" : <span className="inline-flex items-center gap-2"><Mail className="h-4 w-4" /> Send reset link</span>}
+                {loading ? "Sending…" : <span className="inline-flex items-center gap-2"><Mail className="h-4 w-4" /> Email me a reset link</span>}
               </Button>
             </form>
           )}

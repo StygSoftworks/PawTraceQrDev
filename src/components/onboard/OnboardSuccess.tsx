@@ -10,11 +10,11 @@ type Props = {
 
 export function OnboardSuccess({ shortId, assignedPetName }: Props) {
   const title = assignedPetName
-    ? `Tag Linked to ${assignedPetName}!`
+    ? `${assignedPetName}'s Tag is Live!`
     : "Your Tag is Live!";
   const description = assignedPetName
-    ? `Tag ${shortId} is now connected to ${assignedPetName}. Anyone who scans it will see the pet's info and be able to contact you.`
-    : "Your pet's profile is now connected to this tag. Anyone who scans it will see your pet's info and be able to contact you.";
+    ? `Tag ${shortId} is now connected to ${assignedPetName}. Anyone who scans it will see their profile and can contact you instantly.`
+    : "Your pet's profile is now connected to this tag. Anyone who scans it will see their info and can contact you instantly.";
 
   return (
     <Card className="shadow-xl animate-in fade-in-50 slide-in-from-bottom-4 duration-500 overflow-hidden">
@@ -37,7 +37,7 @@ export function OnboardSuccess({ shortId, assignedPetName }: Props) {
           <Button asChild size="lg" className="gap-2 h-12 transition-all hover:scale-105">
             <Link to={`/p/${shortId}`}>
               <Eye className="h-4 w-4" />
-              View Pet Profile
+              See How Your Page Looks
             </Link>
           </Button>
           <Button asChild variant="outline" size="lg" className="gap-2 h-12 transition-all hover:scale-105">
@@ -49,19 +49,19 @@ export function OnboardSuccess({ shortId, assignedPetName }: Props) {
         </div>
 
         <div className="rounded-xl bg-secondary/30 p-4 space-y-3">
-          <p className="text-sm font-medium">Next steps you might want to do:</p>
+          <p className="text-sm font-medium">Recommended next steps:</p>
           <ul className="text-sm text-muted-foreground space-y-2">
             <li className="flex items-start gap-2">
               <PawPrint className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-              Add your phone number and email so finders can reach you
+              Add your phone and email so finders can reach you right away
             </li>
             <li className="flex items-start gap-2">
               <PawPrint className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-              Add vaccination records and medical notes
+              Upload a clear photo to help identify your pet
             </li>
             <li className="flex items-start gap-2">
               <PawPrint className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-              Customize your pet's profile page theme
+              Choose a color theme for your pet's public page
             </li>
           </ul>
         </div>

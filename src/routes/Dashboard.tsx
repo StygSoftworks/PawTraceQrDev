@@ -153,7 +153,7 @@ export default function Dashboard() {
           Dashboard
         </h1>
         <p className="text-muted-foreground">
-          Manage your pets, QR codes, and track activity
+          Your pets, tags, and recent scans -- all in one place
         </p>
       </div>
 
@@ -164,7 +164,7 @@ export default function Dashboard() {
           <Sparkles className="h-4 w-4 text-primary" />
           <AlertDescription className="flex items-center justify-between gap-4">
             <span className="text-sm">
-              Ready to get started? Create your first pet profile to activate your QR tag
+              Create your first pet profile to activate your QR tag. It only takes a minute.
             </span>
             <Button
               size="sm"
@@ -216,7 +216,7 @@ export default function Dashboard() {
                     Registered Pets
                   </CardTitle>
                   <CardDescription className="text-base">
-                    Manage profiles, photos, QR tags, and missing status
+                    Manage profiles, photos, QR tags, and lost-pet alerts
                   </CardDescription>
                 </div>
                 <Button
@@ -249,7 +249,7 @@ export default function Dashboard() {
               ) : isError ? (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>Failed to load pets. Please try again.</AlertDescription>
+                  <AlertDescription>We couldn't load your pets. Check your connection and refresh the page.</AlertDescription>
                 </Alert>
               ) : pets && pets.length > 0 ? (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -277,7 +277,7 @@ export default function Dashboard() {
                   <div className="space-y-2">
                     <p className="text-lg font-medium text-foreground">No pets yet</p>
                     <p className="text-sm text-muted-foreground">
-                      Click <span className="font-medium text-foreground">Add Pet</span> to create your first pet profile
+                      Your pets will appear here once you add them. Creating a profile takes under a minute.
                     </p>
                   </div>
                   <Button onClick={() => setAddOpen(true)} className="gap-2 mt-4">
@@ -388,7 +388,7 @@ export default function Dashboard() {
                   Shared With Me
                 </CardTitle>
                 <CardDescription className="text-base">
-                  Pets that others have shared with you
+                  Pets that family or friends have shared with you
                 </CardDescription>
               </div>
             </CardHeader>
@@ -427,7 +427,7 @@ export default function Dashboard() {
                   <div className="space-y-2">
                     <p className="text-lg font-medium text-foreground">No shared pets</p>
                     <p className="text-sm text-muted-foreground">
-                      When someone shares a pet with you, it will appear here
+                      When a family member or friend shares a pet with you, it will appear here
                     </p>
                   </div>
                 </div>

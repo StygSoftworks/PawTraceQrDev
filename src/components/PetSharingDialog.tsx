@@ -17,18 +17,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Users,
-  UserPlus,
-  Mail,
-  Trash2,
-  Edit,
-  Eye,
-  Clock,
-  Check,
-  AlertCircle,
-  RefreshCw,
-} from "lucide-react";
+import { Users, UserPlus, Mail, Trash2, CreditCard as Edit, Eye, Clock, Check, CircleAlert as AlertCircle, RefreshCw } from "lucide-react";
 import {
   getPetCollaborators,
   sharePetWithUser,
@@ -118,7 +107,7 @@ export function PetSharingDialog({ pet, open, onOpenChange }: PetSharingDialogPr
             Share {pet.name}
           </DialogTitle>
           <DialogDescription>
-            Invite family members or friends to view and manage {pet.name}'s profile.
+            Invite family or friends to view and help manage {pet.name}'s profile.
           </DialogDescription>
         </DialogHeader>
 
@@ -176,7 +165,7 @@ export function PetSharingDialog({ pet, open, onOpenChange }: PetSharingDialogPr
               {shareMutation.isPending ? (
                 <>
                   <RefreshCw className="h-4 w-4 animate-spin" />
-                  Sending invitation...
+                  Sending invite...
                 </>
               ) : (
                 <>
@@ -205,7 +194,7 @@ export function PetSharingDialog({ pet, open, onOpenChange }: PetSharingDialogPr
               </div>
             ) : activeCollaborators.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">
-                No one has access to this pet yet. Send an invitation above.
+                Only you can see this pet right now. Invite someone above to share access.
               </p>
             ) : (
               <div className="space-y-2">

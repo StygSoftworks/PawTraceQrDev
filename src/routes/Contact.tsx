@@ -120,7 +120,7 @@ export default function Contact() {
           Contact Us
         </h1>
         <p className="text-muted-foreground text-lg">
-          Have a question or need help? We're here to assist you.
+          Have a question or need help? We typically reply within 24-48 hours.
         </p>
       </div>
 
@@ -130,7 +130,7 @@ export default function Contact() {
             <CardHeader>
               <CardTitle>Send us a message</CardTitle>
               <CardDescription>
-                Fill out the form below and we'll get back to you as soon as possible.
+                We'll get back to you as soon as possible.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -234,7 +234,7 @@ export default function Contact() {
                   </Label>
                   <Textarea
                     id="message"
-                    placeholder="Please describe your question or issue..."
+                    placeholder="Tell us what's on your mind..."
                     rows={6}
                     {...register("message")}
                     disabled={isSubmitting}
@@ -308,8 +308,7 @@ export default function Contact() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-blue-800 dark:text-blue-200">
-                We typically respond to inquiries within 24-48 hours during business
-                days. For urgent matters, please include a phone number.
+                We typically respond within 24-48 hours on business days. For urgent matters, include a phone number and we'll call you back.
               </p>
             </CardContent>
           </Card>
@@ -320,9 +319,9 @@ export default function Contact() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                If your pet is lost and someone has scanned their QR code, you'll
-                receive location notifications in your Dashboard. Check your pet's
-                activity page for the latest updates.
+                If your pet is lost and someone scans their tag, you'll see their
+                location in your Dashboard automatically. Check your pet's activity
+                tab for the latest sighting.
               </p>
             </CardContent>
           </Card>

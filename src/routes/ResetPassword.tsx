@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle2, LogIn } from "lucide-react";
+import { CircleCheck as CheckCircle2, LogIn } from "lucide-react";
 
 export default function ResetPassword() {
   //const nav = useNavigate();
@@ -42,14 +42,14 @@ export default function ResetPassword() {
     <div className="min-h-screen flex items-center justify-center px-4 py-8">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Set a new password</CardTitle>
-          <CardDescription>Enter your new password below.</CardDescription>
+          <CardTitle>Choose a new password</CardTitle>
+          <CardDescription>Enter your new password below. Use at least 8 characters.</CardDescription>
         </CardHeader>
         <CardContent>
           {ok ? (
             <Alert>
               <CheckCircle2 className="h-4 w-4" />
-              <AlertDescription>Password updated successfully.</AlertDescription>
+              <AlertDescription>Password updated. You can now sign in with your new password.</AlertDescription>
             </Alert>
           ) : (
             <form onSubmit={onSubmit} className="space-y-4">
